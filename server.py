@@ -8,15 +8,10 @@ PERSONAL_ID = 'B03FFA'
 PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
 
 
+
 def main():
     # TODO
     pass
-
-
-            
-    
-    
-
 
 if __name__ == '__main__':
     main()
