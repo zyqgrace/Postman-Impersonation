@@ -34,7 +34,6 @@ def parse_conf_path():
 def read_text(send_path):
     files = []
     for file in os.listdir(send_path):
-        print(file)
         files.append(file)
     files.sort()
     texts = []
@@ -48,6 +47,8 @@ def main():
     # TODO
     IP = "127.0.0.1"
     PORT, send_path = parse_conf_path()
+    print(PORT)
+    print(send_path)
     texts = read_text(send_path)
     print(texts)
     dataSocket = socket(AF_INET, SOCK_STREAM)
