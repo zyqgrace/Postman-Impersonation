@@ -34,12 +34,12 @@ def read_text(send_path):
     files = []
     for file in os.listdir(send_path):
         files.append(file)
-    files = files.sort()
+    files.sort()
     texts = []
     for f in files:
-        f = open(send_path,'r')
-        texts += f.readlines()
-        f.close()
+        read_f = open(send_path+"/"+f,'r')
+        texts += read_f.readlines()
+        read_f.close()
     return texts
 
 def main():
@@ -58,3 +58,6 @@ def main():
         dataSocket.send(send_text.encode())
         i+=1
     dataSocket.close()
+
+if __name__ == '__main__':
+    main()
