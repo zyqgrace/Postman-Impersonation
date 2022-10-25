@@ -28,6 +28,7 @@ def parse_conf_path():
         sys.exit(2)
     elif send_path == None:
         sys.exit(2)
+    send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
 
 def read_text(send_path):
