@@ -3,8 +3,6 @@ import socket
 from socket import *
 import sys
 
-
-
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
 PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
@@ -34,7 +32,7 @@ def parse_conf_path():
 def main():
     # TODO
     BUFLEN = 1024
-    IP = "127.0.0.1"
+    IP = 'localhost'
     PORT, path = parse_conf_path()
     listenSocket = socket(AF_INET,SOCK_STREAM)
     listenSocket.bind((IP,PORT))

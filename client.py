@@ -1,6 +1,5 @@
 import os
 import socket
-from socket import *
 import sys
 from dataclasses import dataclass
 
@@ -43,22 +42,26 @@ def read_text(send_path):
         read_f.close()
     return texts
 
+def EHLO(client_sock: socket.socket) -> None:
+    print("C: EHLO 127.0.0.1")
+    client_sock.send(b"EHLO 127.0.0.1\r")
+
 def main():
     # TODO
-    IP = "127.0.0.1"
+    IP = 'localhost'
     PORT, send_path = parse_conf_path()
-    print(PORT)
-    print(send_path)
-    texts = read_text(send_path)
-    print(texts)
-    dataSocket = socket(AF_INET, SOCK_STREAM)
+    files = read_text(send_path)
+    print(files)
+    dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     dataSocket.connect((IP,PORT))
+    EHLO(dataSocket)
     i = 0
-    while True:
-        send_text = texts[i]
+    while i < len(files):
+        send_text = files[i]
         if send_text == 'QUIT':
             break
-        print("C: "+send_text,flush=True)
+        data = "C: "+send_text.strip('\n')
+        print(data,flush=True)
         dataSocket.send(send_text.encode())
         i+=1
     dataSocket.close()
