@@ -8,12 +8,6 @@ from dataclasses import dataclass
 PERSONAL_ID = 'B03FFA'
 PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
 
-@dataclass(frozen=True)
-class ClientConfiguration:
-    server_port: int
-    send_path: str
-
-
 def parse_conf_path():
     server_port = None
     send_path = None
@@ -28,19 +22,22 @@ def parse_conf_path():
                 send_path = info[9:]
     except FileNotFoundError:
         sys.exit(1)
-    
     if server_port.isinstance(int) == False:
         sys.exit(2)
     elif int(server_port) <= 1024:
         sys.exit(2)
     elif send_path == None:
         sys.exit(2)
-    return ClientConfiguration(int(server_port),send_path)
+    return int(server_port),send_path
     
 
 def main():
     # TODO
-    client_conf = parse_conf_path()
+    IP = "127.0.0.1"
+    PORT, send_path = parse_conf_path()
+    dataSocket = socket(socket.AF_INET, socket.SOCK_STREAM)
+    dataSocket.connect((IP,PORT))
+
 
     
     
