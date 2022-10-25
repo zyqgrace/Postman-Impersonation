@@ -44,26 +44,40 @@ def read_text(send_path):
 
 def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1")
-    client_sock.send(b"EHLO 127.0.0.1\r")
+    client_sock.send(b"EHLO 127.0.0.1\r\n")
+
+def check_status_code(client_sock: socket.socket, status_code: int) -> None:
+    server_data = client_sock.recv(256)
+    ls = server_data.decode().split()
+    actual_status_code = int(ls[0])
+    if actual_status_code != status_code:
+        return False
+    else:
+        return True
 
 def main():
     # TODO
     IP = 'localhost'
     PORT, send_path = parse_conf_path()
     files = read_text(send_path)
-    print(files)
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    dataSocket.connect((IP,PORT))
-    EHLO(dataSocket)
-    i = 0
-    while i < len(files):
-        send_text = files[i]
-        if send_text == 'QUIT':
-            break
-        data = "C: "+send_text.strip('\n')
-        print(data,flush=True)
-        dataSocket.send(send_text.encode())
-        i+=1
+    dataSocket.settimeout(20)
+    try:
+        dataSocket.connect((IP,PORT))
+    except TimeoutError:
+        print("C: Cannot establish connection\r\n") 
+    if (check_status_code(dataSocket,250)):
+        EHLO(dataSocket)
+    
+    #i = 0
+    #while i < len(files):
+    #    send_text = files[i]
+    #    if send_text == 'QUIT':
+    #        break
+    #    data = "C: "+send_text.strip('\n')+'\r\n'
+    #    print(data,flush=True)
+    #   dataSocket.send(send_text.encode())
+    #   i+=1
     dataSocket.close()
 
 if __name__ == '__main__':

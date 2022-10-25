@@ -29,6 +29,16 @@ def parse_conf_path():
         sys.exit(2)
     return int(server_port),send_path
 
+def detect_message(data_socket: socket.socket,message)-> None:
+    info_ls = message.decode().split()
+    if info_ls[0] == "QUIT":
+        send = "221 Service closing transmission channel"
+    elif info_ls[0] == "EHLO":
+        send = "250 "+info_ls[1]
+    print("S: "+send)
+    data_socket.send(f"{send}\r\n".encode())
+
+    pass
 def main():
     # TODO
     BUFLEN = 1024
@@ -38,14 +48,14 @@ def main():
     listenSocket.bind((IP,PORT))
     listenSocket.listen(5)
     dataSocket, addr = listenSocket.accept()
+    print("S: 220 Service ready\r\n",flush=True)
+
     with dataSocket:
-        print("S: 220 Service ready\r",flush=True)
         while True:
             recved = dataSocket.recv(BUFLEN)
             if not recved:
                 break
-            info = recved.decode()
-            dataSocket.send("hee".encode())
+            detect_message(dataSocket,recved)
     dataSocket.close()
     listenSocket.close()
 
