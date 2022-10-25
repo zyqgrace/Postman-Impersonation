@@ -3,6 +3,8 @@ import socket
 from socket import *
 import sys
 
+BUFLEN = 1024
+
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
 PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
@@ -41,7 +43,14 @@ def main():
     dataSocket, addr = listenSocket.accept()
     with dataSocket:
         print("S: 220 Service ready\r",flush=True)
-
+        while True:
+            recved = dataSocket.revc(BUFLEN)
+            if not recved:
+                break
+            info = recved.decode()
+            dataSocket.send("hee".encode())
+    dataSocket.close()
+    listenSocket.close()
 
 if __name__ == '__main__':
     main()

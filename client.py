@@ -1,5 +1,4 @@
 import os
-from site import setcopyright
 import socket
 from socket import *
 import sys
@@ -30,11 +29,32 @@ def parse_conf_path():
     elif send_path == None:
         sys.exit(2)
     return int(server_port),send_path
-    
+
+def read_text(send_path):
+    files = []
+    for file in os.listdir(send_path):
+        files.append(file)
+    files = files.sort()
+    texts = []
+    for f in files:
+        f = open(send_path,'r')
+        texts += f.readlines()
+        f.close()
+    return texts
 
 def main():
     # TODO
     IP = "127.0.0.1"
     PORT, send_path = parse_conf_path()
+    texts = read_text(send_path)
     dataSocket = socket(AF_INET, SOCK_STREAM)
     dataSocket.connect((IP,PORT))
+    i = 0
+    while i < len(texts):
+        send_text = texts[i]
+        if send_text == 'QUIT':
+            break
+        print("C: "+send_text)
+        dataSocket.send(send_text.encode())
+        i+=1
+    dataSocket.close()
