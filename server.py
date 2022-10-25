@@ -1,7 +1,7 @@
 import os
 import socket
+from socket import *
 import sys
-
 
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
@@ -16,12 +16,12 @@ def parse_conf_path():
         for info in configuration:
             info = info.strip("\r\n")
             if info[0:11] == "server_port":
-                server_port = info[11:]
+                server_port = info[12:]
             elif info[0:10] == "inbox_path":
-                send_path = info[10:]
+                send_path = info[11:]
     except FileNotFoundError:
         sys.exit(1)
-    if server_port.isinstance(int) == False:
+    if server_port.isnumeric() == False:
         sys.exit(2)
     elif int(server_port) <= 1024:
         sys.exit(2)
@@ -33,12 +33,12 @@ def main():
     # TODO
     IP = "127.0.0.1"
     PORT, path = parse_conf_path()
-    listenSocket = socket(socket.AF_INET, socket.SOCK_STREAM)
+    print(PORT)
+    print(path)
+    listenSocket = socket(AF_INET,SOCK_STREAM)
     listenSocket.bind((IP,PORT))
     listenSocket.listen(5)
     dataSocket, addr = listenSocket.accept()
-
-
 
 
 if __name__ == '__main__':

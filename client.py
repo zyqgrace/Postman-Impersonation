@@ -1,6 +1,7 @@
 import os
 from site import setcopyright
 import socket
+from socket import *
 import sys
 from dataclasses import dataclass
 
@@ -17,12 +18,12 @@ def parse_conf_path():
         for info in configuration:
             info = info.strip("\r\n")
             if info[0:11] == "server_port":
-                server_port = info[11:]
+                server_port = info[12:]
             elif info[0:9] == "send_path":
-                send_path = info[9:]
+                send_path = info[10:]
     except FileNotFoundError:
         sys.exit(1)
-    if server_port.isinstance(int) == False:
+    if server_port.isnumeric() == False:
         sys.exit(2)
     elif int(server_port) <= 1024:
         sys.exit(2)
@@ -35,12 +36,5 @@ def main():
     # TODO
     IP = "127.0.0.1"
     PORT, send_path = parse_conf_path()
-    dataSocket = socket(socket.AF_INET, socket.SOCK_STREAM)
+    dataSocket = socket(AF_INET, SOCK_STREAM)
     dataSocket.connect((IP,PORT))
-
-
-    
-    
-
-if __name__ == '__main__':
-    main()
