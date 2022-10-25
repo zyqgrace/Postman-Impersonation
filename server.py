@@ -39,6 +39,8 @@ def main():
     listenSocket.bind((IP,PORT))
     listenSocket.listen(5)
     dataSocket, addr = listenSocket.accept()
+    with dataSocket:
+        print("S: 220 Service ready")
 
 
 if __name__ == '__main__':
