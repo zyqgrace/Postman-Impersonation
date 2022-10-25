@@ -33,6 +33,7 @@ def parse_conf_path():
 def read_text(send_path):
     files = []
     for file in os.listdir(send_path):
+        print(file)
         files.append(file)
     files.sort()
     texts = []
