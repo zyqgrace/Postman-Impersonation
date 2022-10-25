@@ -40,7 +40,7 @@ def main():
     listenSocket.listen(5)
     dataSocket, addr = listenSocket.accept()
     with dataSocket:
-        print("S: 220 Service ready")
+        print("S: 220 Service ready",flush=True)
 
 
 if __name__ == '__main__':
