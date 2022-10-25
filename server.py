@@ -43,7 +43,7 @@ def main():
     with dataSocket:
         print("S: 220 Service ready\r",flush=True)
         while True:
-            recved = dataSocket.revc(BUFLEN)
+            recved = dataSocket.recv(BUFLEN)
             if not recved:
                 break
             info = recved.decode()
