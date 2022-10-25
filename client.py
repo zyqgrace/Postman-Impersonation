@@ -47,10 +47,11 @@ def main():
     IP = "127.0.0.1"
     PORT, send_path = parse_conf_path()
     texts = read_text(send_path)
+    print(texts)
     dataSocket = socket(AF_INET, SOCK_STREAM)
     dataSocket.connect((IP,PORT))
     i = 0
-    while i < len(texts):
+    while True:
         send_text = texts[i]
         if send_text == 'QUIT':
             break
