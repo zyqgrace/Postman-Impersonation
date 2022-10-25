@@ -57,7 +57,7 @@ def main():
         send_text = texts[i]
         if send_text == 'QUIT':
             break
-        print("C: "+send_text)
+        print("C: "+send_text,flush=True)
         dataSocket.send(send_text.encode())
         i+=1
     dataSocket.close()
