@@ -119,7 +119,7 @@ def EHLO(client_sock: socket.socket) -> None:
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
     data = server_data.decode()
-    print("S: "+data,end="\r\n",flush=True)
+    print("S: "+data,flush=True)
     data_ls = data.split()
     actual_status_code = int(data_ls[0])
     if actual_status_code != status_code:
@@ -136,7 +136,6 @@ def main():
     dataSocket.settimeout(20)
     try:
         dataSocket.connect((IP,PORT))
-        print("S: 220 Service ready", end="\r\n",flush=True)
     except TimeoutError:
         print("C: Cannot establish connection\r\n") 
 
