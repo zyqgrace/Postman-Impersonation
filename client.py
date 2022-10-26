@@ -113,7 +113,7 @@ def send_email_via_server(client_socket, text):
 
         
 def EHLO(client_sock: socket.socket) -> None:
-    print("EHLO 127.0.0.1\r\n",flush=True)
+    print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
     client_sock.send(b"EHLO 127.0.0.1\r\n")
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
@@ -134,7 +134,7 @@ def main():
     dataSocket.settimeout(20)
     try:
         dataSocket.connect((IP,PORT))
-        print("S: 220 Service ready\r\n",flush=True)
+        print("S: 220 Service ready", end="\r\n",flush=True)
     except TimeoutError:
         print("C: Cannot establish connection\r\n") 
 
