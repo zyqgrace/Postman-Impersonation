@@ -79,15 +79,16 @@ def main():
         dataSocket.connect((IP,PORT))
     except TimeoutError:
         print("C: Cannot establish connection\r\n") 
-    if (check_status_code(dataSocket,250)):
+    if (check_status_code(dataSocket,220)):
         EHLO(dataSocket)
-        
+
     i = 0
     while i < len(files):
         text = read_text(files[i])
         j = 0
         while j < len(text):
-            dataSocket.send(f"{text[j]}\r\n".encode())
+            data = text[j]+"\r\n"
+            dataSocket.send(data.encode())
             if (text[j]=="QUIT"):
                 break
             j+=1

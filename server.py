@@ -51,7 +51,7 @@ def main():
     with dataSocket:
         while True:
             recved = dataSocket.recv(BUFLEN)
-            print("C: "+recved.encode(),flush=True)
+            print("C: "+recved.decode(),flush=True)
             if not recved:
                 break
             detect_message(dataSocket,recved)
