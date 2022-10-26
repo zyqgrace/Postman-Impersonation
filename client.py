@@ -54,6 +54,7 @@ def read_text(filepath):
             i+=1
     except Exception:
         print("error")
+    print(texts)
     return texts
 
 def EHLO(client_sock: socket.socket) -> None:
