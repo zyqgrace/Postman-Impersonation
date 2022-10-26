@@ -116,7 +116,8 @@ def send_email_via_server(client_socket, text):
                 print("C: "+text,end="\r\n",flush=True)
                 text = text+"\r\n"
                 client_socket.send(text.encode())
-        if check_status_code(client_socket, 354):
+                if check_status_code(client_socket, 354):
+                    pass
             print("C: .",end="\r\n",flush=True)
             client_socket.send(b".\r\n")
         if check_status_code(client_socket, 250):
