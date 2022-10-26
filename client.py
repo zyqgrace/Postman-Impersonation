@@ -63,6 +63,7 @@ def read_text(filepath):
     except Exception:
         print("error")
     return texts
+
 def convert_text_to_email(texts):
     """
     This aims to parse text_ls in email form
@@ -100,12 +101,19 @@ def send_email_via_server(client_socket, text):
         if check_status_code(client_socket,250):
             client_socket.send(b"DATA\r\n")
         if check_status_code(client_socket, 354):
+            date = email.date+ "\r\n"
+            client_socket.send(date.encode())
+        if check_status_code(client_socket, 354):
+            subject = email.subject + "\r\n"
+            client_socket.send(subject.encode())
+        if check_status_code(client_socket, 354):
             for text in email.body:
                 text = text+"\r\n"
                 client_socket.send(text.encode())
-        
+
         
 def EHLO(client_sock: socket.socket) -> None:
+    print("EHLO 127.0.0.1\r\n",flush=True)
     client_sock.send(b"EHLO 127.0.0.1\r\n")
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
@@ -126,6 +134,7 @@ def main():
     dataSocket.settimeout(20)
     try:
         dataSocket.connect((IP,PORT))
+        print("S: 220 Service ready\r\n",flush=True)
     except TimeoutError:
         print("C: Cannot establish connection\r\n") 
 
