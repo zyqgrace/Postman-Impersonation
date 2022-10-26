@@ -43,7 +43,7 @@ def read_text(send_path):
     return texts
 
 def EHLO(client_sock: socket.socket) -> None:
-    print("C: EHLO 127.0.0.1")
+    print("C: EHLO 127.0.0.1\r\n",flush=True)
     client_sock.send(b"EHLO 127.0.0.1\r\n")
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:

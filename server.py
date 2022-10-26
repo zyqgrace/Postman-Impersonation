@@ -1,6 +1,5 @@
 import os
 import socket
-from socket import *
 import sys
 
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
@@ -29,7 +28,7 @@ def parse_conf_path():
         sys.exit(2)
     return int(server_port),send_path
 
-def detect_message(data_socket: socket.socket,message)-> None:
+def detect_message(data_socket, message):
     info_ls = message.decode().split()
     if info_ls[0] == "QUIT":
         send = "221 Service closing transmission channel"
@@ -38,13 +37,12 @@ def detect_message(data_socket: socket.socket,message)-> None:
     print("S: "+send)
     data_socket.send(f"{send}\r\n".encode())
 
-    pass
 def main():
     # TODO
     BUFLEN = 1024
     IP = 'localhost'
     PORT, path = parse_conf_path()
-    listenSocket = socket(AF_INET,SOCK_STREAM)
+    listenSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     listenSocket.bind((IP,PORT))
     listenSocket.listen(5)
     dataSocket, addr = listenSocket.accept()
