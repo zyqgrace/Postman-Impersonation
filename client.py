@@ -94,27 +94,27 @@ def send_email_via_server(client_socket, text):
         email = convert_text_to_email(text)
         if check_status_code(client_socket,250):
             mail_from = "MAIL FROM:"+email.From+"\r\n"
-            print("C: "+mail_from,flush=True)
+            print("C: "+"MAIL FROM:"+email.From,end='\r\n',flush=True)
             client_socket.send(mail_from.encode())
         if check_status_code(client_socket,250):
             send_to = "RCPT TO:" + email.to + "\r\n"
-            print("C: "+send_to,flush=True)
+            print("C: "+"RCPT TO:" + email.to,end='\r\n',flush=True)
             client_socket.send(send_to.encode())
         if check_status_code(client_socket,250):
-            print("DATA",end="\r\n",flush = True)
+            print("C: DATA",end="\r\n",flush = True)
             client_socket.send(b"DATA\r\n")
         if check_status_code(client_socket, 354):
             date = email.date+ "\r\n"
-            print("C: "+date,flush=True)
+            print("C: "+email.date,end="\r\n",flush=True)
             client_socket.send(date.encode())
         if check_status_code(client_socket, 354):
             subject = email.subject + "\r\n"
-            print("C: "+subject,flush=True)
+            print("C: "+ email.subject,end="\r\n",flush=True)
             client_socket.send(subject.encode())
         if check_status_code(client_socket, 354):
             for text in email.body:
+                print("C: "+text,end="\r\n",flush=True)
                 text = text+"\r\n"
-                print("C: "+text,flush=True)
                 client_socket.send(text.encode())
         if check_status_code(client_socket, 354):
             print("C: .",end="\r\n",flush=True)
@@ -124,7 +124,7 @@ def send_email_via_server(client_socket, text):
             client_socket.send(b"QUIT\r\n")
         if check_status_code(client_socket, 221):
             pass
-        
+
 def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
     client_sock.send(b"EHLO 127.0.0.1\r\n")
