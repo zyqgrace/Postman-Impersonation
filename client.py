@@ -7,6 +7,14 @@ from dataclasses import dataclass
 PERSONAL_ID = 'B03FFA'
 PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
 
+class Email:
+    def __init__(self,From,to,date,subject,body):
+        self.From = From
+        self.to = to
+        self.date = date
+        self.subject = subject
+        self.body = body
+
 def parse_conf_path():
     server_port = None
     send_path = None
@@ -54,9 +62,49 @@ def read_text(filepath):
             i+=1
     except Exception:
         print("error")
-    print(texts)
     return texts
+def convert_text_to_email(texts):
+    """
+    This aims to parse text_ls in email form
+    """
+    From = None
+    To = None
+    Date = None
+    Subject = None
+    Body = []
+    for text in texts:
+        if text[0:4]=='From':
+            From = text[6:]
+        elif text[0:2] == "To":
+            To = text[4:]
+        elif text[0:4] == "Date":
+            Date = text
+        elif text[0:7] == "Subject":
+            Subject = text
+        else:
+            Body.append(text)
+    return Email(From, To, Date, Subject, Body)
 
+
+def send_email_via_server(client_socket, text):
+    with client_socket:
+        if check_status_code(client_socket, 220):
+            EHLO(client_socket)
+        email = convert_text_to_email(text)
+        if check_status_code(client_socket,250):
+            mail_from = "MAIL FROM:"+email.From+"\r\n"
+            client_socket.send(mail_from.encode())
+        if check_status_code(client_socket,250):
+            send_to = "RCPT TO:" + email.to + "\r\n"
+            client_socket.send(send_to.encode())
+        if check_status_code(client_socket,250):
+            client_socket.send(b"DATA\r\n")
+        if check_status_code(client_socket, 354):
+            for text in email.body:
+                text = text+"\r\n"
+                client_socket.send(text.encode())
+        
+        
 def EHLO(client_sock: socket.socket) -> None:
     client_sock.send(b"EHLO 127.0.0.1\r\n")
 
@@ -80,19 +128,11 @@ def main():
         dataSocket.connect((IP,PORT))
     except TimeoutError:
         print("C: Cannot establish connection\r\n") 
-    if (check_status_code(dataSocket,220)):
-        EHLO(dataSocket)
 
     i = 0
     while i < len(files):
         text = read_text(files[i])
-        j = 0
-        while j < len(text):
-            data = text[j]+"\r\n"
-            dataSocket.send(data.encode())
-            if (text[j]=="QUIT"):
-                break
-            j+=1
+        send_email_via_server(dataSocket,text)
         i+=1
     dataSocket.close()
 

@@ -29,7 +29,8 @@ def parse_conf_path():
     return int(server_port),send_path
 
 def detect_message(data_socket, message):
-    info_ls = message.decode().split()
+    info = message.decode()
+    info_ls = info.split()
     if info_ls[0] == "QUIT":
         send = "221 Service closing transmission channel"
     elif info_ls[0] == "EHLO":
