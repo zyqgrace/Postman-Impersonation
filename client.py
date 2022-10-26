@@ -30,20 +30,33 @@ def parse_conf_path():
     send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
 
-def read_text(send_path):
+def directory_lis(send_path):
+    """
+    parameter: the send path after parsing example(~/send)
+    This will return all the files in alphabetically order
+    """
     files = []
-    for file in os.listdir(send_path):
-        files.append(file)
-    files.sort()
-    texts = []
-    for f in files:
-        read_f = open(send_path+"/"+f,'r')
-        texts += read_f.readlines()
-        read_f.close()
+    try:
+        for file in os.listdir(send_path):
+            files.append(send_path+"/"+file)
+        files.sort()
+    except Exception:
+        sys.exit(2)
+    return files
+
+def read_text(filepath):
+    try:
+        f = open(filepath,"r")
+        texts = f.readlines()
+        i = 0
+        while i < len(texts):
+            texts[i]= texts[i].strip("\n")
+            i+=1
+    except Exception:
+        print("error")
     return texts
 
 def EHLO(client_sock: socket.socket) -> None:
-    print("C: EHLO 127.0.0.1\r\n",flush=True)
     client_sock.send(b"EHLO 127.0.0.1\r\n")
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
@@ -59,7 +72,7 @@ def main():
     # TODO
     IP = 'localhost'
     PORT, send_path = parse_conf_path()
-    files = read_text(send_path)
+    files = directory_lis(send_path)
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     dataSocket.settimeout(20)
     try:
@@ -68,16 +81,16 @@ def main():
         print("C: Cannot establish connection\r\n") 
     if (check_status_code(dataSocket,250)):
         EHLO(dataSocket)
-    
-    #i = 0
-    #while i < len(files):
-    #    send_text = files[i]
-    #    if send_text == 'QUIT':
-    #        break
-    #    data = "C: "+send_text.strip('\n')+'\r\n'
-    #    print(data,flush=True)
-    #   dataSocket.send(send_text.encode())
-    #   i+=1
+        
+    i = 0
+    while i < len(files):
+        text = read_text(files[i])
+        j = 0
+        while j < len(text):
+            dataSocket.send(f"{text[j]}\r\n".encode())
+            if (text[j]=="QUIT"):
+                break
+            j+=1
     dataSocket.close()
 
 if __name__ == '__main__':
