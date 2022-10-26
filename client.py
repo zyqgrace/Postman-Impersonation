@@ -94,23 +94,36 @@ def send_email_via_server(client_socket, text):
         email = convert_text_to_email(text)
         if check_status_code(client_socket,250):
             mail_from = "MAIL FROM:"+email.From+"\r\n"
+            print("C: "+mail_from,flush=True)
             client_socket.send(mail_from.encode())
         if check_status_code(client_socket,250):
             send_to = "RCPT TO:" + email.to + "\r\n"
+            print("C: "+send_to,flush=True)
             client_socket.send(send_to.encode())
         if check_status_code(client_socket,250):
+            print("DATA",end="\r\n",flush = True)
             client_socket.send(b"DATA\r\n")
         if check_status_code(client_socket, 354):
             date = email.date+ "\r\n"
+            print("C: "+date,flush=True)
             client_socket.send(date.encode())
         if check_status_code(client_socket, 354):
             subject = email.subject + "\r\n"
+            print("C: "+subject,flush=True)
             client_socket.send(subject.encode())
         if check_status_code(client_socket, 354):
             for text in email.body:
                 text = text+"\r\n"
+                print("C: "+text,flush=True)
                 client_socket.send(text.encode())
-
+        if check_status_code(client_socket, 354):
+            print("C: .",end="\r\n",flush=True)
+            client_socket.send(b".\r\n")
+        if check_status_code(client_socket, 250):
+            print("C: QUIT",end="\r\n",flush=True)
+            client_socket.send(b"QUIT\r\n")
+        if check_status_code(client_socket, 221):
+            pass
         
 def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
@@ -118,8 +131,8 @@ def EHLO(client_sock: socket.socket) -> None:
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
-    data = server_data.decode()
-    print("S: "+data,flush=True)
+    data = server_data.decode().strip("\r\n")
+    print("S: "+data,end="\r\n",flush=True)
     data_ls = data.split()
     actual_status_code = int(data_ls[0])
     if actual_status_code != status_code:
