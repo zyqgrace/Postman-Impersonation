@@ -118,8 +118,10 @@ def EHLO(client_sock: socket.socket) -> None:
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
-    ls = server_data.decode().split()
-    actual_status_code = int(ls[0])
+    data = server_data.decode()
+    print("S: "+data,end="\r\n",flush=True)
+    data_ls = data.split()
+    actual_status_code = int(data_ls[0])
     if actual_status_code != status_code:
         return False
     else:
