@@ -93,6 +93,7 @@ def main():
             if (text[j]=="QUIT"):
                 break
             j+=1
+        i+=1
     dataSocket.close()
 
 if __name__ == '__main__':

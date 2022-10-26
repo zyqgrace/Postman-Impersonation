@@ -35,7 +35,8 @@ def detect_message(data_socket, message):
     elif info_ls[0] == "EHLO":
         send = "250 "+info_ls[1]
     print("S: "+send)
-    data_socket.send(f"{send}\r\n".encode())
+    data = send+"\r\n"
+    data_socket.send(data.encode())
 
 def main():
     # TODO
