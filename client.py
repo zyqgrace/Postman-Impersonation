@@ -57,47 +57,43 @@ def directory_lis(send_path):
     return files
 
 def read_text(filepath):
-    try:
-        f = open(filepath,"r")
-        texts = f.readlines()
-        i = 0
-        while i < len(texts):
-            texts[i]= texts[i].strip("\n")
-            i+=1
-    except Exception:
-        print("error")
-    return texts
-
-def convert_text_to_email(texts):
     """
-    This aims to parse text_ls in email form
+    This aims to read the text from absolute filepath parse
+    and return information as an Email instance
     """
     From = None
     To = None
     Date = None
     Subject = None
     Body = []
-    for text in texts:
-        if text[0:4]=='From':
-            From = text[6:]
-        elif text[0:2] == "To":
-            To = text[4:]
-        elif text[0:4] == "Date":
-            Date = text
-        elif text[0:7] == "Subject":
-            Subject = text
-        else:
-            Body.append(text)
-    if From == None or To == None or Date == None or Subject==None:
-        return False
+    try:
+        f = open(filepath,"r")
+        texts = f.readlines()
+        i = 0
+        if texts[0][0:4] == 'From':
+            From = texts[6:-2]
+        elif texts[1][0:2] == "To":
+            To = texts[4:-2]
+        elif texts[2][0:4] == "Date":
+            Date = texts[0:-2]
+        elif texts[3][0:7] == "Subject":
+            Subject = texts[0:-2]
+        i = 4
+        while i < len(texts):
+            Body.append(texts[i].strip("\n"))
+            i+=1
+        if From == None or To == None or Date == None or Subject==None:
+            print("C: "+filepath+": Bad formation",end="\r\n",flush=True)
+            sys.exit(0)
+    except Exception:
+        print("error")
     return Email(From, To, Date, Subject, Body)
 
 
-def send_email_via_server(client_socket, text):
+def send_email_via_server(client_socket, email):
     with client_socket:
         if check_status_code(client_socket, 220):
             EHLO(client_socket)
-        email = convert_text_to_email(text)
         if check_status_code(client_socket,250):
             mail_from = "MAIL FROM:"+email.From+"\r\n"
             print("C: "+"MAIL FROM:"+email.From,end='\r\n',flush=True)
@@ -165,8 +161,8 @@ def main():
         sys.exit(3)
     i = 0
     while i < len(files):
-        text = read_text(files[i])
-        send_email_via_server(dataSocket,text)
+        email = read_text(files[i])
+        send_email_via_server(dataSocket,email)
         i+=1
     dataSocket.close()
 
