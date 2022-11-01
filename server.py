@@ -65,7 +65,6 @@ def main():
     BUFLEN = 1024
     IP = 'localhost'
     PORT, path = parse_conf_path()
-    print(PORT)
     listenSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listenSocket.bind((IP,PORT))
@@ -74,19 +73,17 @@ def main():
     dataSocket, addr = listenSocket.accept()
     print("S: 220 Service ready",end="\r\n",flush=True)
     stage = 1
-    with dataSocket:
-        while True:
-            recved = dataSocket.recv(BUFLEN)
-            if not recved:
-                break
-            info = recved.decode()
-            print(info)
-            print("C: "+info.strip("\n"),end="\r\n",flush=True)
-            if (info[0:4]=="EHLO" and stage==1):
-                EHLO(dataSocket,info)
-                stage = 2
-            else:
-                detect_message(dataSocket,recved)
+    while True:
+        recved = dataSocket.recv(BUFLEN)
+        info = recved.decode()
+        if not recved or info=="QUIT":
+            break
+        print("C: "+info.strip("\n"),end="\r\n",flush=True)
+        if (info[0:4]=="EHLO" and stage==1):
+            EHLO(dataSocket,info)
+            stage = 2
+        else:
+            detect_message(dataSocket,recved)
     dataSocket.close()
     listenSocket.close()
 
