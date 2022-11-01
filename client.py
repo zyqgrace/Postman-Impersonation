@@ -18,7 +18,7 @@ class Email:
 def parse_conf_path():
     server_port = None
     send_path = None
-    if len(sys.agrv)<= 1:
+    if len(sys.argv)<= 1:
         sys.exit(1)
     try:
         conf_path = open(sys.argv[1],'r')
