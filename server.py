@@ -9,6 +9,8 @@ PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
 def parse_conf_path():
     server_port = None
     send_path = None
+    if len(sys.argv)<= 1:
+        sys.exit(1)
     try:
         conf_path = open(sys.argv[1],'r')
         configuration = conf_path.readlines()
@@ -63,6 +65,7 @@ def main():
     BUFLEN = 1024
     IP = 'localhost'
     PORT, path = parse_conf_path()
+    print(PORT)
     listenSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listenSocket.bind((IP,PORT))
