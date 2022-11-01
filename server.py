@@ -39,7 +39,7 @@ def EHLO(data_socket,message):
     command = message.split(" ")
     if (len(command)==1):
         respond_message = "501 Syntax error in parameters or arguments"
-        print("S: "+respond_message,,end="\r\n",flush=True)
+        print("S: "+respond_message,end="\r\n",flush=True)
         data_socket.send((respond_message+"\r\n").encode())
     else:
         respond_message = "250 "+command[1]
@@ -54,7 +54,7 @@ def QUIT(data_socket):
     send_msg = "221 Service closing transmission channel"
     print("S: "+send_msg,end="\r\n",flush=True)
     data_socket.send((send_msg+"\r\n").encode())
-    
+
 def detect_message(data_socket, message):
     info = message.decode()
     info_ls = info.split()
