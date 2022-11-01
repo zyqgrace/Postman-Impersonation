@@ -39,18 +39,22 @@ def EHLO(data_socket,message):
     command = message.split(" ")
     if (len(command)==1):
         respond_message = "501 Syntax error in parameters or arguments"
-        print("S: "+respond_message,end="\r\n",flush=True)
-        data_socket.send(respond_message.encode())
+        print("S: "+respond_message,,end="\r\n",flush=True)
+        data_socket.send((respond_message+"\r\n").encode())
     else:
         respond_message = "250 "+command[1]
         print("S: "+respond_message,end="\r\n",flush=True)
-        data_socket.send(respond_message.encode())
+        data_socket.send((respond_message+"\r\n").encode())
         #authenticity check
         respond_message = "250 AUTH CRAM-MD5"
         print("S: "+respond_message,end="\r\n",flush=True)
-        data_socket.send(respond_message.encode())
+        data_socket.send((respond_message+"\r\n").encode())
 
-
+def QUIT(data_socket):
+    send_msg = "221 Service closing transmission channel"
+    print("S: "+send_msg,end="\r\n",flush=True)
+    data_socket.send((send_msg+"\r\n").encode())
+    
 def detect_message(data_socket, message):
     info = message.decode()
     info_ls = info.split()
@@ -76,20 +80,21 @@ def main():
         send_msg = "220 Service ready"
         print("S: "+send_msg,end="\r\n",flush=True)
         stage = 1
-        with conn:
-            conn.send((send_msg+"\r\n").encode())
-            while True:
-                recved = conn.recv(BUFLEN)
-                info = recved.decode()
-                if not recved or info=="QUIT":
-                    print("going to break")
-                    break
-                print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-                if (info[0:4]=="EHLO" and stage==1):
-                    EHLO(conn,info)
-                    stage = 2
-                else:
-                    detect_message(conn,recved)
+        conn.send((send_msg+"\r\n").encode())
+        while True:
+            recved = conn.recv(BUFLEN)
+            info = recved.decode()
+            if not recved or info=="QUIT":
+                print("going to break")
+                break
+            print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+            if (info[0:4]=="EHLO" and stage==1):
+                EHLO(conn,info)
+                stage = 2
+            elif(info[0:4]=="QUIT"):
+                QUIT(conn)
+            else:
+                detect_message(conn,recved)
         conn.close()
         s.close()
 
