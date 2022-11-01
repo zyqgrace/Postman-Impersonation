@@ -69,6 +69,7 @@ def read_text(filepath):
     try:
         f = open(filepath,"r")
         texts = f.readlines()
+        print(texts)
         i = 0
         if texts[0][0:4] == 'From':
             From = texts[6:-2]
