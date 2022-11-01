@@ -69,7 +69,15 @@ def read_text(filepath):
         Date = None
         Subject = None
         Body = []
-        if texts[0][0:4] == 'From':
+        print(texts[0][0:4] == "From")
+        print(texts[1][0:2] == "To")
+        print(texts[2][0:4] == "Date")
+        print(texts[3][0:7] == "Subject")
+        print(texts[0][6:-1])
+        print(texts[1][4:-1])
+        print(texts[2][0:-1])
+        print(texts[3][0:-1])
+        if texts[0][0:4] == "From":
             From = texts[0][6:-1]
         elif texts[1][0:2] == "To":
             To = texts[1][4:-1]
