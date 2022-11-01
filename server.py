@@ -74,6 +74,7 @@ def main():
     print("S: 220 Service ready",end="\r\n",flush=True)
     stage = 1
     while True:
+        print("True~",flush=True)
         recved = dataSocket.recv(BUFLEN)
         info = recved.decode()
         if not recved or info=="QUIT":
