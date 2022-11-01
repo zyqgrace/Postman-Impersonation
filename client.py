@@ -152,8 +152,8 @@ def main():
     IP = 'localhost'
     PORT, send_path = parse_conf_path()
     files = directory_lis(send_path)
-    dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for filepath in files:
+        dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         email = read_text(filepath)
         try:
             dataSocket.connect((IP,PORT))
