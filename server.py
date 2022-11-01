@@ -28,6 +28,18 @@ def parse_conf_path():
         sys.exit(2)
     return int(server_port),send_path
 
+def EHLO(data_socket,message):
+    '''
+    message - entire recved from client
+    example EHLO 127.0.0.1
+    interpret the message whether it is valid and respond the EHLO command.
+    '''
+    command = message.split(" ")
+    if (len(command) == 2):
+        respond_message = "250 "+command[1]
+        print(respond_message,end="\r\n",flush=True)
+        data_socket.send(respond_message.encode()) 
+
 def detect_message(data_socket, message):
     info = message.decode()
     info_ls = info.split()
@@ -48,16 +60,21 @@ def main():
     listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listenSocket.bind((IP,PORT))
     listenSocket.listen(5)
+    stage = 0
     dataSocket, addr = listenSocket.accept()
-    print("S: 220 Service ready\r\n",flush=True)
-
+    print("S: 220 Service ready",end="\r\n",flush=True)
+    stage = 1
     with dataSocket:
         while True:
             recved = dataSocket.recv(BUFLEN)
-            print("C: "+recved.decode(),flush=True)
             if not recved:
                 break
-            detect_message(dataSocket,recved)
+            info = recved.decode()
+            if (info[0:4]=="EHLO" and stage==1):
+                EHLO(dataSocket,info)
+                stage = 2
+            else:
+                detect_message(dataSocket,recved)
     dataSocket.close()
     listenSocket.close()
 
