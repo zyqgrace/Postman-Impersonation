@@ -69,22 +69,14 @@ def read_text(filepath):
         Date = None
         Subject = None
         Body = []
-        print(texts[0][0:4])
-        print(texts[1][0:2])
-        print(texts[2][0:4])
-        print(texts[3][0:7])
         if texts[0][0:4] == 'From':
-            From = texts[6:-1]
+            From = texts[0][6:-1]
         elif texts[1][0:2] == "To":
-            To = texts[4:-1]
+            To = texts[1][4:-1]
         elif texts[2][0:4] == "Date":
-            Date = texts[0:-1]
+            Date = texts[2][0:-1]
         elif texts[3][0:7] == "Subject":
-            Subject = texts[0:-1]
-        print(From)
-        print(To)
-        print(Date)
-        print(Subject)
+            Subject = texts[3][0:-1]
         i = 4
         while i < len(texts):
             Body.append(texts[i].strip("\n"))
@@ -161,17 +153,15 @@ def main():
     PORT, send_path = parse_conf_path()
     files = directory_lis(send_path)
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        dataSocket.connect((IP,PORT))
-    except ConnectionRefusedError:
-        print("C: Cannot establish connection",end="\r\n",flush=True) 
-        sys.exit(3)
-    i = 0
-    while i < len(files):
-        email = read_text(files[i])
+    for filepath in files:
+        email = read_text(filepath)
+        try:
+            dataSocket.connect((IP,PORT))
+        except ConnectionRefusedError:
+            print("C: Cannot establish connection",end="\r\n",flush=True) 
+            sys.exit(3)
         send_email_via_server(dataSocket,email)
-        i+=1
-    dataSocket.close()
+        dataSocket.close()
 
 if __name__ == '__main__':
     main()
