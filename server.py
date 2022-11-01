@@ -65,29 +65,31 @@ def main():
     BUFLEN = 1024
     IP = 'localhost'
     PORT, path = parse_conf_path()
-    listenSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    listenSocket.bind((IP,PORT))
-    listenSocket.listen(5)
-    stage = 0
-    dataSocket, addr = listenSocket.accept()
-    print("S: 220 Service ready",end="\r\n",flush=True)
-    stage = 1
-    while True:
-        recved = dataSocket.recv(BUFLEN)
-        info = recved.decode()
-        print(info)
-        if not recved or info=="QUIT":
-            print("going to break")
-            break
-        print("C: "+info.strip("\n"),end="\r\n",flush=True)
-        if (info[0:4]=="EHLO" and stage==1):
-            EHLO(dataSocket,info)
-            stage = 2
-        else:
-            detect_message(dataSocket,recved)
-    dataSocket.close()
-    listenSocket.close()
+    with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((IP,PORT))
+        s.listen()
+        stage = 0
+        conn, addr = s.accept()
+        print(addr)
+        print("S: 220 Service ready",end="\r\n",flush=True)
+        stage = 1
+        with conn:
+            while True:
+                recved = conn.recv(BUFLEN)
+                info = recved.decode()
+                print(info)
+                if not recved or info=="QUIT":
+                    print("going to break")
+                    break
+                print("C: "+info.strip("\n"),end="\r\n",flush=True)
+                if (info[0:4]=="EHLO" and stage==1):
+                    EHLO(conn,info)
+                    stage = 2
+                else:
+                    detect_message(conn,recved)
+        conn.close()
+        s.close()
 
 if __name__ == '__main__':
     main()
