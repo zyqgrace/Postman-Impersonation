@@ -46,11 +46,10 @@ def directory_lis(send_path):
     This will return all the files in alphabetically order
     """
     files = []
-    abs_path = os.listdir(send_path)
-    if(not os.path.isdir(abs_path)):
+    if(not os.path.isdir(send_path)):
         sys.exit(2)
     try:
-        for file in abs_path:
+        for file in os.listdir(send_path):
             files.append(send_path+"/"+file)
         files.sort()
     except Exception:
