@@ -64,24 +64,19 @@ def read_text(filepath):
     try:
         f = open(filepath,"r")
         texts = f.readlines()
-        print(texts)
         From = None
         To = None
         Date = None
         Subject = None
         Body = []
         if texts[0][0:4] == 'From':
-            From = texts[6:-2]
-            print(From)
+            From = texts[6:-1]
         elif texts[1][0:2] == "To":
-            To = texts[4:-2]
-            print(To)
+            To = texts[4:-1]
         elif texts[2][0:4] == "Date":
-            Date = texts[0:-2]
-            print(Date)
+            Date = texts[0:-1]
         elif texts[3][0:7] == "Subject":
-            Subject = texts[0:-2]
-            print(Subject)
+            Subject = texts[0:-1]
         i = 4
         while i < len(texts):
             Body.append(texts[i].strip("\n"))
