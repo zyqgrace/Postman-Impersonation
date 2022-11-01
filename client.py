@@ -18,6 +18,8 @@ class Email:
 def parse_conf_path():
     server_port = None
     send_path = None
+    if len(sys.agrv)<= 1:
+        sys.exit(1)
     try:
         conf_path = open(sys.argv[1],'r')
         configuration = conf_path.readlines()
@@ -44,8 +46,11 @@ def directory_lis(send_path):
     This will return all the files in alphabetically order
     """
     files = []
+    abs_path = os.listdir(send_path)
+    if(not os.path.isdir(abs_path)):
+        sys.exit(2)
     try:
-        for file in os.listdir(send_path):
+        for file in abs_path:
             files.append(send_path+"/"+file)
         files.sort()
     except Exception:
@@ -152,12 +157,11 @@ def main():
     PORT, send_path = parse_conf_path()
     files = directory_lis(send_path)
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    dataSocket.settimeout(20)
     try:
         dataSocket.connect((IP,PORT))
-    except TimeoutError:
+    except ConnectionRefusedError:
         print("C: Cannot establish connection\r\n") 
-
+        sys.exit(1)
     i = 0
     while i < len(files):
         text = read_text(files[i])
