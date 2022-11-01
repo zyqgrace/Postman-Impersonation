@@ -88,6 +88,8 @@ def convert_text_to_email(texts):
             Subject = text
         else:
             Body.append(text)
+    if From == None or To == None or Date == None or Subject==None:
+        return False
     return Email(From, To, Date, Subject, Body)
 
 
@@ -159,8 +161,8 @@ def main():
     try:
         dataSocket.connect((IP,PORT))
     except ConnectionRefusedError:
-        print("C: Cannot establish connection\r\n") 
-        sys.exit(1)
+        print("C: Cannot establish connection",end="\r\n",flush=True) 
+        sys.exit(3)
     i = 0
     while i < len(files):
         text = read_text(files[i])
