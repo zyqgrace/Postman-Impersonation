@@ -81,6 +81,10 @@ def read_text(filepath):
             Date = texts[0:-1]
         elif texts[3][0:7] == "Subject":
             Subject = texts[0:-1]
+        print(From)
+        print(To)
+        print(Date)
+        print(Subject)
         i = 4
         while i < len(texts):
             Body.append(texts[i].strip("\n"))
