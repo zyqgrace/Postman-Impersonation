@@ -71,16 +71,12 @@ def read_text(filepath):
         Body = []
         if texts[0][0:4] == "From":
             From = texts[0][6:-1]
-        elif texts[1][0:2] == "To":
+        if texts[1][0:2] == "To":
             To = texts[1][4:-1]
-        elif texts[2][0:4] == "Date":
+        if texts[2][0:4] == "Date":
             Date = texts[2][0:-1]
-        elif texts[3][0:7] == "Subject":
+        if texts[3][0:7] == "Subject":
             Subject = texts[3][0:-1]
-        print(From)
-        print(To)
-        print(Subject)
-        print(Date)
         i = 4
         while i < len(texts):
             Body.append(texts[i].strip("\n"))
