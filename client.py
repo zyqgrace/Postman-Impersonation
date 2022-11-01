@@ -82,7 +82,7 @@ def read_text(filepath):
             Body.append(texts[i].strip("\n"))
             i+=1
         if From == None or To == None or Date == None or Subject == None:
-            print("C: "+filepath+": Bad formation",end="\r\n",flush=True)
+            print("C: "+os.path.abspath(filepath)+": Bad formation",end="\r\n",flush=True)
             sys.exit(0)
     except Exception:
         print("error")
@@ -154,12 +154,12 @@ def main():
     files = directory_lis(send_path)
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for filepath in files:
-        email = read_text(filepath)
         try:
             dataSocket.connect((IP,PORT))
         except ConnectionRefusedError:
             print("C: Cannot establish connection",end="\r\n",flush=True) 
             sys.exit(3)
+        email = read_text(filepath)
         send_email_via_server(dataSocket,email)
         dataSocket.close()
 
