@@ -71,14 +71,14 @@ def main():
         s.listen()
         stage = 0
         conn, addr = s.accept()
-        print(addr)
-        print("S: 220 Service ready",end="\r\n",flush=True)
+        send_msg = "220 Service ready"
+        print("S: "+send_msg,end="\r\n",flush=True)
         stage = 1
         with conn:
+            conn.send((send_msg+"\r\n").encode())
             while True:
                 recved = conn.recv(BUFLEN)
                 info = recved.decode()
-                print(info)
                 if not recved or info=="QUIT":
                     print("going to break")
                     break
