@@ -39,14 +39,16 @@ def EHLO(data_socket,message):
     command = message.split(" ")
     if (len(command)==1):
         respond_message = "501 Syntax error in parameters or arguments"
-    if (len(command) == 2):
+        print("S: "+respond_message,end="\r\n",flush=True)
+        data_socket.send(respond_message.encode())
+    else:
         respond_message = "250 "+command[1]
-    print("S: "+respond_message,end="\r\n",flush=True)
-    data_socket.send(respond_message.encode())
-    #authenticity check
-    respond_message = "250 AUTH CRAM-MD5"
-    print("S: "+respond_message,end="\r\n",flush=True)
-    data_socket.send(respond_message.encode())
+        print("S: "+respond_message,end="\r\n",flush=True)
+        data_socket.send(respond_message.encode())
+        #authenticity check
+        respond_message = "250 AUTH CRAM-MD5"
+        print("S: "+respond_message,end="\r\n",flush=True)
+        data_socket.send(respond_message.encode())
 
 
 def detect_message(data_socket, message):
@@ -82,7 +84,7 @@ def main():
                 if not recved or info=="QUIT":
                     print("going to break")
                     break
-                print("C: "+info.strip("\n"),end="\r\n",flush=True)
+                print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
                 if (info[0:4]=="EHLO" and stage==1):
                     EHLO(conn,info)
                     stage = 2
