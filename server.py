@@ -77,6 +77,7 @@ def main():
             if not recved:
                 break
             info = recved.decode()
+            print(info)
             print("C: "+info.strip("\n"),end="\r\n",flush=True)
             if (info[0:4]=="EHLO" and stage==1):
                 EHLO(dataSocket,info)
