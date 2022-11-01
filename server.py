@@ -45,6 +45,7 @@ def main():
     IP = 'localhost'
     PORT, path = parse_conf_path()
     listenSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    listenSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listenSocket.bind((IP,PORT))
     listenSocket.listen(5)
     dataSocket, addr = listenSocket.accept()
