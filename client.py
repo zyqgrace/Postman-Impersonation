@@ -122,7 +122,7 @@ def send_email_via_server(client_socket, email):
             print("C: QUIT",end="\r\n",flush=True)
             client_socket.send(b"QUIT\r\n")
         if check_status_code(client_socket, 221):
-            pass
+            client_socket.close()
 
 def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
@@ -161,7 +161,6 @@ def main():
             print("C: Cannot establish connection",end="\r\n",flush=True) 
             sys.exit(3)
         send_email_via_server(dataSocket,email)
-        dataSocket.close()
 
 if __name__ == '__main__':
     main()
