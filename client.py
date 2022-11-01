@@ -61,24 +61,27 @@ def read_text(filepath):
     This aims to read the text from absolute filepath parse
     and return information as an Email instance
     """
-    From = None
-    To = None
-    Date = None
-    Subject = None
-    Body = []
     try:
         f = open(filepath,"r")
         texts = f.readlines()
         print(texts)
-        i = 0
+        From = None
+        To = None
+        Date = None
+        Subject = None
+        Body = []
         if texts[0][0:4] == 'From':
             From = texts[6:-2]
+            print(From)
         elif texts[1][0:2] == "To":
             To = texts[4:-2]
+            print(To)
         elif texts[2][0:4] == "Date":
             Date = texts[0:-2]
+            print(Date)
         elif texts[3][0:7] == "Subject":
             Subject = texts[0:-2]
+            print(Subject)
         i = 4
         while i < len(texts):
             Body.append(texts[i].strip("\n"))
