@@ -97,11 +97,7 @@ def send_email_via_server(client_socket, text):
             print("C: "+"MAIL FROM:"+email.From,end='\r\n',flush=True)
             client_socket.send(mail_from.encode())
         if check_status_code(client_socket,250):
-            emails = email.to.split(",")
-            for e in emails:
-                RCPT(client_socket,e)
-                if not check_status_code(client_socket,250):
-                    break
+            RCPT(client_socket,email.to)
         print("C: DATA",end="\r\n",flush = True)
         client_socket.send(b"DATA\r\n")
         if check_status_code(client_socket, 354):
@@ -131,10 +127,13 @@ def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
     client_sock.send(b"EHLO 127.0.0.1\r\n")
 
-def RCPT(client_socket,email):
-    send_to = "RCPT TO:" + email + "\r\n"
-    print("C: "+"RCPT TO:" + email,end='\r\n',flush=True)
-    client_socket.send(send_to.encode())
+def RCPT(client_socket,recipients):
+    recipients = recipients.split(",")
+    for r in recipients:
+        send_to = "RCPT TO:" + r + "\r\n"
+        print("C: "+"RCPT TO:" + r,end='\r\n',flush=True)
+        client_socket.send(send_to.encode())
+        check_status_code(client_socket,250)
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
