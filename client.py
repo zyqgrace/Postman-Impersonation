@@ -69,6 +69,10 @@ def read_text(filepath):
         Date = None
         Subject = None
         Body = []
+        print(texts[0][0:4])
+        print(texts[1][0:2])
+        print(texts[2][0:4])
+        print(texts[3][0:7])
         if texts[0][0:4] == 'From':
             From = texts[6:-1]
         elif texts[1][0:2] == "To":
@@ -81,7 +85,7 @@ def read_text(filepath):
         while i < len(texts):
             Body.append(texts[i].strip("\n"))
             i+=1
-        if From == None or To == None or Date == None or Subject==None:
+        if From == None or To == None or Date == None or Subject == None:
             print("C: "+filepath+": Bad formation",end="\r\n",flush=True)
             sys.exit(0)
     except Exception:
