@@ -74,16 +74,14 @@ def check_email_format(info):
     part2 = False
     part3 = False
     
-    if info[0] == '<':
-        part1 = True
+    if info[0] != '<':
+        return False
     subdomain = True
     if info[1]=="-":
         return False
     i = 0
     while i < len(info):
-        if subdomain and info[i]==".":
-            return False
-        elif not subdomain and info[i]==".":
+        if not subdomain and info[i]==".":
             part2 = True
         elif not subdomain and info[i]=="-":
             return False
