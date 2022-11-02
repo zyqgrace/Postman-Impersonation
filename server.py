@@ -54,6 +54,16 @@ def QUIT(data_socket):
     print("S: "+send_msg,end="\r\n",flush=True)
     data_socket.send((send_msg+"\r\n").encode())
 
+def check_stage(datasocket, info,stage):
+    sequence = ["EHLO",['AUTH',"QUIT","MAIL"],"RCPT","DATA"]
+    for s in sequence[stage]:
+        if info == s:
+            return True
+    respond_msg = "503 Bad sequence of commands"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
+    return False
+
 def check_syntax(datasocket, info):
     '''
     param info - the entire message String from the client
@@ -77,11 +87,13 @@ def check_syntax(datasocket, info):
         if info_ls[0] != "QUIT\r\n":
             syntax_correct = False
     elif info_ls[0][0:4]=="MAIL":
-        if len(info_ls) != 2:
-            syntax_correct = False
-        else:
-            if info_ls[1][0:6]!="FROM:<":
-                syntax_correct = False
+        syntax_correct = False
+        if len(info_ls) == 2:
+            part1 = False
+            part2 = False
+            part3 = False
+            if info_ls[1][0:6] == "FROM:<":
+                part1 = True
             i = 6
             subdomain = True
             while i < len(info_ls[1]):
@@ -89,11 +101,14 @@ def check_syntax(datasocket, info):
                     syntax_correct = False
                     break
                 elif not subdomain and info_ls[1][i]==".":
-                    syntax_correct = True
+                    part2 = True
                 if info_ls[1][i]=="@":
                     subdomain = False
-                    syntax_correct = False
                 i+=1
+            if info_ls[1][-1]==">":
+                part3 = True
+            if part1 == True and part2 == True and part3 == True:
+                syntax_correct = True
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
@@ -124,40 +139,34 @@ def main():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((IP,PORT))
         s.listen()
-        stage = 0
         conn, addr = s.accept()
         send_msg = "220 Service ready"
         print("S: "+send_msg,end="\r\n",flush=True)
-        stage = 1
+        stage = 0
         conn.send((send_msg+"\r\n").encode())
         while True:
-            try:
-                recved = conn.recv(BUFLEN)
-                info = recved.decode()
-            except socket.error:
+            recved = conn.recv(BUFLEN)
+            info = recved.decode()
+            if not recved:
                 err_msg = "Connection lost"
                 print("S: "+err_msg,end="\r\n",flush=True)
-            if not recved:
                 break
             print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-            if check_syntax(conn, info):
-                if info[0:4]=="EHLO" and stage==1:
-                    EHLO(conn,info)
-                    stage = 2
-                elif info[0:4]=="AUTH" and stage==2:
-                    stage = 3
-                elif info[0:4]=="MAIL" and stage==2:
-                    MAIL(conn,info)
-                    stage = 4
-                elif info[0:4]=="RCPT" and stage==3:
-                    RCPT(conn,info)
-                    stage = 5
-                elif (info[0:4]=="QUIT"):
-                    QUIT(conn)
-                else:
-                    respond_msg = "503 Bad sequence of commands"
-                    print("S: "+respond_msg,end="\r\n",flush=True)
-                    conn.send((respond_msg+"\r\n").encode())
+            if check_stage(info[0:4],stage):
+                if check_syntax(conn, info):
+                    if info[0:4]=="EHLO":
+                        EHLO(conn,info)
+                        stage = 1
+                    elif info[0:4]=="AUTH":
+                        stage = 2
+                    elif info[0:4]=="MAIL":
+                        MAIL(conn,info)
+                        stage = 2
+                    elif info[0:4]=="RCPT":
+                        RCPT(conn,info)
+                        stage = 3
+                    elif (info[0:4]=="QUIT"):
+                        QUIT(conn)
         conn.close()
         s.close()
 
