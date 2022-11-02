@@ -116,12 +116,12 @@ def check_syntax(datasocket, info):
     elif info_ls[0][0:4]=="MAIL":
         syntax_correct = False
         if len(info_ls) == 2:
-            if info_ls[1][0:5] == "FROM:" and len(info_ls[1])>5:
+            if info_ls[1][0:5] == "FROM:" and len(info_ls[1])>7:
                 syntax_correct = check_email_format(info_ls[1][5:])
     elif info_ls[0][0:4]=="RCPT":
         syntax_correct = False
         if len(info_ls) == 2:
-            if info_ls[1][0:3] == "TO:" and len(info_ls[1])>3:
+            if info_ls[1][0:3] == "TO:" and len(info_ls[1])>5:
                 syntax_correct = check_email_format(info_ls[1][3:])
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
