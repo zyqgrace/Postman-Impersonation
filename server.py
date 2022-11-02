@@ -59,7 +59,7 @@ def check_stage(datasocket, info,stage):
     for s in sequence[stage]:
         if info == s:
             return True
-    if info == "QUIT" or info =="RSET":
+    if info == "QUIT" or info =="RSET" or info == "NOOP":
         return True
     respond_msg = "503 Bad sequence of commands"
     print("S: "+respond_msg,end="\r\n",flush=True)
@@ -73,15 +73,20 @@ def check_email_format(info):
     part1 = False
     part2 = False
     part3 = False
-    if info[0] == "<":
+    
+    if info[0] == '<':
         part1 = True
-    i = 1
     subdomain = True
+    if info[1]=="-":
+        return False
+    i = 0
     while i < len(info):
         if subdomain and info[i]==".":
             return False
         elif not subdomain and info[i]==".":
             part2 = True
+        elif not subdomain and info[i]=="-":
+            return False
         if info[i]=="@":
             subdomain = False
         i+=1
@@ -129,6 +134,9 @@ def check_syntax(datasocket, info):
     elif info_ls[0][0:4]=="RSET":
         if len(info_ls)!=1:
             syntax_correct = False
+    elif info_ls[0][0:4]=="NOOP":
+        if len(info_ls)!=1:
+            syntax_correct = False
     if not syntax_correct:
         print("S: "+error_msg,end="\r\n",flush=True)
         datasocket.send((error_msg+"\r\n").encode())
@@ -152,6 +160,10 @@ def RSET(datasocket,info):
     print("S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
 
+def NOOP(datasocket,info):
+    respond_msg = "250 Requested mail action okay completed"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
 def DATA(datasocket,info):
     respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
     print("S: "+respond_msg,end="\r\n",flush=True)
@@ -220,6 +232,8 @@ def main():
                             stage = 1
                     elif info[0:4]=="DATA":
                         DATA(conn,info)
+                    elif info[0:4]=="NOOP":
+                        NOOP(conn,info)
         conn.close()
         s.close()
 
