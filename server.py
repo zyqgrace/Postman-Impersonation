@@ -59,7 +59,7 @@ def check_stage(datasocket, info,stage):
     for s in sequence[stage]:
         if info == s:
             return True
-    if info == "QUIT":
+    if info == "QUIT" or info =="RSET":
         return True
     respond_msg = "503 Bad sequence of commands"
     print("S: "+respond_msg,end="\r\n",flush=True)
@@ -116,13 +116,13 @@ def check_syntax(datasocket, info):
     elif info_ls[0][0:4]=="MAIL":
         syntax_correct = False
         if len(info_ls) == 2:
-            if info_ls[1][0:5] == "FROM:" and check_email_format(info_ls[1][5:]):
-                syntax_correct = True
+            if info_ls[1][0:5] == "FROM:" and len(info_ls[1])>5:
+                syntax_correct = check_email_format(info_ls[1][5:])
     elif info_ls[0][0:4]=="RCPT":
         syntax_correct = False
         if len(info_ls) == 2:
-            if info_ls[1][0:3] == "TO:" and check_email_format(info_ls[1][3:]):
-                syntax_correct = True
+            if info_ls[1][0:3] == "TO:" and len(info_ls[1])>3:
+                syntax_correct = check_email_format(info_ls[1][3:])
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
@@ -140,6 +140,11 @@ def MAIL(datasocket,info):
     datasocket.send((respond_msg+"\r\n").encode())
 
 def RCPT(datasocket,info):
+    respond_msg = "250 Requested mail action okay completed"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
+
+def RSET(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
     print("S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
@@ -179,9 +184,13 @@ def main():
                     elif info[0:4]=="RCPT":
                         RCPT(conn,info)
                         stage = 3
-                    elif (info[0:4]=="QUIT"):
+                    elif info[0:4]=="QUIT":
                         QUIT(conn)
                         break
+                    elif info[0:4]=="RSET":
+                        RSET(conn,info)
+                        if stage != 0:
+                            stage = 1
         conn.close()
         s.close()
 
