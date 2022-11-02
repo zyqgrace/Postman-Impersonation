@@ -108,7 +108,7 @@ def main():
         while True:
             recved = conn.recv(BUFLEN)
             info = recved.decode()
-            if check_syntax(info):
+            if check_syntax(conn, info):
                 if not recved or info=="QUIT":
                     print("going to break")
                     break
