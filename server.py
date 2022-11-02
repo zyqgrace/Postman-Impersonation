@@ -55,7 +55,7 @@ def QUIT(data_socket):
     data_socket.send((send_msg+"\r\n").encode())
 
 def check_stage(datasocket, info,stage):
-    sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["DATA"]]
+    sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["RCPT","DATA"]]
     for s in sequence[stage]:
         if info == s:
             return True
@@ -126,6 +126,9 @@ def check_syntax(datasocket, info):
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
+    elif info_ls[0][0:4]=="RSET":
+        if len(info_ls)!=1:
+            syntax_correct = False
     if not syntax_correct:
         print("S: "+error_msg,end="\r\n",flush=True)
         datasocket.send((error_msg+"\r\n").encode())
@@ -148,6 +151,30 @@ def RSET(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
     print("S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
+
+def DATA(datasocket,info):
+    respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
+    text = ""
+    while True:
+        recved = datasocket.recv(1024)
+        info = recved.decode()
+        if not recved:
+            err_msg = "Connection lost"
+            print("S: "+err_msg,end="\r\n",flush=True)
+            break
+        print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+        if info == ".\r\n":
+            break
+        text+=info
+        respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
+        print("S: "+respond_msg,end="\r\n",flush=True)
+        datasocket.send((respond_msg+"\r\n").encode())
+    respond_msg = "250 Requested mail action okay completed"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
+    return text
 
 def main():
     # TODO
@@ -191,6 +218,8 @@ def main():
                         RSET(conn,info)
                         if stage != 0:
                             stage = 1
+                    elif info[0:4]=="DATA":
+                        DATA(conn,info)
         conn.close()
         s.close()
 
