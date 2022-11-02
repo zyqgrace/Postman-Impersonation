@@ -44,11 +44,10 @@ def EHLO(data_socket,message):
     else:
         respond_message = "250 127.0.0.1"
         print("S: "+respond_message,end="\r\n",flush=True)
-        data_socket.send((respond_message+"\r\n").encode())
         #authenticity check
-        respond_message = "250 AUTH CRAM-MD5"
+        auth_msg = "250 AUTH CRAM-MD5"
         print("S: "+respond_message,end="\r\n",flush=True)
-        data_socket.send((respond_message+"\r\n").encode())
+        data_socket.send((respond_message+"\r\n"+auth_msg+"\r\n").encode())
 
 def QUIT(data_socket):
     send_msg = "221 Service closing transmission channel"
@@ -85,6 +84,8 @@ def check_syntax(datasocket, info):
             for num in port_number:
                 if int(num) < 0 or int(num)>255:
                     syntax_correct = False
+    elif info_ls[0]!="QUIT\r\n":
+        syntax_correct = False
     if not syntax_correct:
         print("S: "+error_msg,end="\r\n",flush=True)
         datasocket.send((error_msg+"\r\n").encode())
