@@ -55,7 +55,7 @@ def QUIT(data_socket):
     data_socket.send((send_msg+"\r\n").encode())
 
 def check_stage(datasocket, info,stage):
-    sequence = ["EHLO",['AUTH',"QUIT","MAIL"],"RCPT","DATA"]
+    sequence = [["EHLO"],['AUTH',"QUIT","MAIL"],["RCPT"],["DATA"]]
     for s in sequence[stage]:
         if info == s:
             return True
