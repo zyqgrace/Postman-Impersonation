@@ -105,7 +105,7 @@ def check_syntax(datasocket, info):
                 if info_ls[1][i]=="@":
                     subdomain = False
                 i+=1
-            if info_ls[1][-1]==">":
+            if info_ls[1][-3]==">":
                 part3 = True
             if part1 == True and part2 == True and part3 == True:
                 syntax_correct = True
