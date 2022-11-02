@@ -54,17 +54,6 @@ def QUIT(data_socket):
     print("S: "+send_msg,end="\r\n",flush=True)
     data_socket.send((send_msg+"\r\n").encode())
 
-def detect_message(data_socket, message):
-    info = message.decode()
-    info_ls = info.split()
-    if info_ls[0] == "QUIT":
-        send = "221 Service closing transmission channel"
-    elif info_ls[0] == "EHLO":
-        send = "250 "+info_ls[1]
-    print("S: "+send)
-    data = send+"\r\n"
-    data_socket.send(data.encode())
-
 def check_syntax(datasocket, info):
     '''
     param info - the entire message String from the client
@@ -74,7 +63,7 @@ def check_syntax(datasocket, info):
     syntax_correct = True
     error_msg = "501 Syntax error in parameters or arguments"
     info_ls = info.split(" ")
-    if info_ls[0] == "EHLO":
+    if info_ls[0][0:4] == "EHLO":
         if len(info_ls) != 2:
             syntax_correct = False
         else:
@@ -87,6 +76,24 @@ def check_syntax(datasocket, info):
     elif info_ls[0][0:4]=="QUIT":
         if info_ls[0] != "QUIT\r\n":
             syntax_correct = False
+    elif info_ls[0][0:4]=="MAIL":
+        if len(info_ls) != 2:
+            syntax_correct = False
+        else:
+            if info_ls[1][0:6]!="FROM:<":
+                syntax_correct = False
+            i = 6
+            subdomain = True
+            while i < len(info_ls[1]):
+                if subdomain and info_ls[1][i]==".":
+                    syntax_correct = False
+                    break
+                elif not subdomain and info_ls[1][i]==".":
+                    syntax_correct = True
+                if info_ls[1][i]=="@":
+                    subdomain = False
+                    syntax_correct = False
+                i+=1
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
@@ -147,6 +154,10 @@ def main():
                     stage = 5
                 elif (info[0:4]=="QUIT"):
                     QUIT(conn)
+                else:
+                    respond_msg = "503 Bad sequence of commands"
+                    print("S: "+respond_msg,end="\r\n",flush=True)
+                    conn.send((respond_msg+"\r\n").encode())
         conn.close()
         s.close()
 
