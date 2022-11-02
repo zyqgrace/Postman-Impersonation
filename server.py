@@ -133,17 +133,16 @@ def main():
             if not recved:
                 break
             print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-            print(stage,flush=True)
             if check_syntax(conn, info):
                 if info[0:4]=="EHLO" and stage==1:
                     EHLO(conn,info)
                     stage = 2
                 elif info[0:4]=="AUTH" and stage==2:
                     stage = 3
-                elif info[0:4]=="MAIL" and stage==3:
+                elif info[0:4]=="MAIL" and stage==2:
                     MAIL(conn,info)
                     stage = 4
-                elif info[0:4]=="RCPT" and stage==4:
+                elif info[0:4]=="RCPT" and stage==3:
                     RCPT(conn,info)
                     stage = 5
                 elif (info[0:4]=="QUIT"):
