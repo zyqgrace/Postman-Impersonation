@@ -152,7 +152,7 @@ def main():
                 print("S: "+err_msg,end="\r\n",flush=True)
                 break
             print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-            if check_stage(info[0:4],stage):
+            if check_stage(conn,info[0:4],stage):
                 if check_syntax(conn, info):
                     if info[0:4]=="EHLO":
                         EHLO(conn,info)
