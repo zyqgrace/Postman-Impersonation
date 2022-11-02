@@ -79,8 +79,7 @@ def check_email_format(info):
     subdomain = True
     while i < len(info):
         if subdomain and info[i]==".":
-            syntax_correct = False
-            break
+            return False
         elif not subdomain and info[i]==".":
             part2 = True
         if info[i]=="@":
@@ -117,14 +116,13 @@ def check_syntax(datasocket, info):
     elif info_ls[0][0:4]=="MAIL":
         syntax_correct = False
         if len(info_ls) == 2:
-            if info_ls[1][0:3] == "TO:" and check_email_format(info_ls[1][3:]):
+            if info_ls[1][0:5] == "FROM:" and check_email_format(info_ls[1][5:]):
                 syntax_correct = True
     elif info_ls[0][0:4]=="RCPT":
         syntax_correct = False
         if len(info_ls) == 2:
-            if info_ls[1][0:5] == "FROM:" and check_email_format(info_ls[1][5:]):
+            if info_ls[1][0:3] == "TO:" and check_email_format(info_ls[1][3:]):
                 syntax_correct = True
-        pass
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
