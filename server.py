@@ -66,6 +66,32 @@ def check_stage(datasocket, info,stage):
     datasocket.send((respond_msg+"\r\n").encode())
     return False
 
+def check_email_format(info):
+    '''
+    correct example of info : <bob@bob.org>
+    '''
+    part1 = False
+    part2 = False
+    part3 = False
+    if info[0] == "<":
+        part1 = True
+    i = 1
+    subdomain = True
+    while i < len(info):
+        if subdomain and info[i]==".":
+            syntax_correct = False
+            break
+        elif not subdomain and info[i]==".":
+            part2 = True
+        if info[i]=="@":
+            subdomain = False
+        i+=1
+    if info[-3]==">":
+        part3 = True
+    if part1 == True and part2 == True and part3 == True:
+        return True
+    return False
+
 def check_syntax(datasocket, info):
     '''
     param info - the entire message String from the client
@@ -91,26 +117,14 @@ def check_syntax(datasocket, info):
     elif info_ls[0][0:4]=="MAIL":
         syntax_correct = False
         if len(info_ls) == 2:
-            part1 = False
-            part2 = False
-            part3 = False
-            if info_ls[1][0:6] == "FROM:<":
-                part1 = True
-            i = 6
-            subdomain = True
-            while i < len(info_ls[1]):
-                if subdomain and info_ls[1][i]==".":
-                    syntax_correct = False
-                    break
-                elif not subdomain and info_ls[1][i]==".":
-                    part2 = True
-                if info_ls[1][i]=="@":
-                    subdomain = False
-                i+=1
-            if info_ls[1][-3]==">":
-                part3 = True
-            if part1 == True and part2 == True and part3 == True:
+            if info_ls[1][0:3] == "TO:" and check_email_format(info_ls[1][3:]):
                 syntax_correct = True
+    elif info_ls[0][0:4]=="RCPT":
+        syntax_correct = False
+        if len(info_ls) == 2:
+            if info_ls[1][0:5] == "FROM:" and check_email_format(info_ls[1][5:]):
+                syntax_correct = True
+        pass
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
