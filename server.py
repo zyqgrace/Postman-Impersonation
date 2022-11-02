@@ -55,10 +55,12 @@ def QUIT(data_socket):
     data_socket.send((send_msg+"\r\n").encode())
 
 def check_stage(datasocket, info,stage):
-    sequence = [["EHLO"],['AUTH',"QUIT","MAIL"],["RCPT"],["DATA"]]
+    sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["DATA"]]
     for s in sequence[stage]:
         if info == s:
             return True
+    if info == "QUIT":
+        return True
     respond_msg = "503 Bad sequence of commands"
     print("S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
@@ -167,6 +169,7 @@ def main():
                         stage = 3
                     elif (info[0:4]=="QUIT"):
                         QUIT(conn)
+                        break
         conn.close()
         s.close()
 
