@@ -42,12 +42,12 @@ def EHLO(data_socket,message):
         print("S: "+respond_message,end="\r\n",flush=True)
         data_socket.send((respond_message+"\r\n").encode())
     else:
-        respond_message = "250 127.0.0.1"
-        print("S: "+respond_message,end="\r\n",flush=True)
+        respond_msg = "250 127.0.0.1"
+        print("S: "+respond_msg,end="\r\n",flush=True)
         #authenticity check
         auth_msg = "250 AUTH CRAM-MD5"
-        print("S: "+respond_message,end="\r\n",flush=True)
-        data_socket.send((respond_message+"\r\n"+auth_msg+"\r\n").encode())
+        print("S: "+auth_msg,end="\r\n",flush=True)
+        data_socket.send((respond_msg+"\r\n"+auth_msg+"\r\n").encode())
 
 def QUIT(data_socket):
     send_msg = "221 Service closing transmission channel"
@@ -107,13 +107,16 @@ def main():
         stage = 1
         conn.send((send_msg+"\r\n").encode())
         while True:
-            recved = conn.recv(BUFLEN)
-            info = recved.decode()
+            try:
+                recved = conn.recv(BUFLEN)
+                info = recved.decode()
+            except socket.error:
+                err_msg = "Connection lost"
+                print("S: "+err_msg,end="\r\n",flush=True)
+            if not recved:
+                break
+            print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
             if check_syntax(conn, info):
-                if not recved or info=="QUIT":
-                    print("going to break")
-                    break
-                print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
                 if (info[0:4]=="EHLO" and stage==1):
                     EHLO(conn,info)
                     stage = 2
