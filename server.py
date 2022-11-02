@@ -84,8 +84,9 @@ def check_syntax(datasocket, info):
             for num in port_number:
                 if int(num) < 0 or int(num)>255:
                     syntax_correct = False
-    elif info_ls[0]!="QUIT\r\n":
-        syntax_correct = False
+    elif info_ls[0][0:4]=="QUIT":
+        if info_ls[0] != "QUIT\r\n":
+            syntax_correct = False
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             syntax_correct = False
