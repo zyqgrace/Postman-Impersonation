@@ -86,10 +86,26 @@ def check_syntax(datasocket, info):
                     syntax_correct = False
     elif info_ls[0]!="QUIT\r\n":
         syntax_correct = False
+    elif info_ls[0] == "AUTH":
+        if info_ls[1] != "CRAM-MD5\r\n":
+            syntax_correct = False
     if not syntax_correct:
         print("S: "+error_msg,end="\r\n",flush=True)
         datasocket.send((error_msg+"\r\n").encode())
     return syntax_correct
+
+def AUTH(datasocket,info):
+    pass
+
+def MAIL(datasocket,info):
+    respond_msg = "250 Requested mail action okay completed"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
+
+def RCPT(datasocket,info):
+    respond_msg = "250 Requested mail action okay completed"
+    print("S: "+respond_msg,end="\r\n",flush=True)
+    datasocket.send((respond_msg+"\r\n").encode())
 
 def main():
     # TODO
@@ -117,12 +133,18 @@ def main():
                 break
             print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
             if check_syntax(conn, info):
-                if (info[0:4]=="EHLO" and stage==1):
+                if info[0:4]=="EHLO" and stage==1:
                     EHLO(conn,info)
                     stage = 2
-                elif (info[0:4]=="MAIL" and stage==3):
-                    pass
-                elif(info[0:4]=="QUIT"):
+                elif info[0:4]=="AUTH" and stage==2:
+                    stage = 3
+                elif info[0:4]=="MAIL" and stage==3:
+                    MAIL(conn,info)
+                    stage = 4
+                elif info[0:4]=="RCPT" and stage==4:
+                    RCPT(conn,info)
+                    stage = 5
+                elif (info[0:4]=="QUIT"):
                     QUIT(conn)
         conn.close()
         s.close()
