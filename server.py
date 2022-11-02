@@ -42,7 +42,7 @@ def EHLO(data_socket,message):
         print("S: "+respond_message,end="\r\n",flush=True)
         data_socket.send((respond_message+"\r\n").encode())
     else:
-        respond_message = "250 "+command[1]
+        respond_message = "250 127.0.0.1"
         print("S: "+respond_message,end="\r\n",flush=True)
         data_socket.send((respond_message+"\r\n").encode())
         #authenticity check
@@ -66,6 +66,30 @@ def detect_message(data_socket, message):
     data = send+"\r\n"
     data_socket.send(data.encode())
 
+def check_syntax(datasocket, info):
+    '''
+    param info - the entire message String from the client
+    for the purpose of checking whether syntex is correct
+    otherwise print and send 503 error 
+    '''
+    syntax_correct = True
+    error_msg = "501 Syntax error in parameters or arguments"
+    info_ls = info.split(" ")
+    if info_ls[0] == "EHLO":
+        if len(info_ls) != 2:
+            syntax_correct = False
+        else:
+            port_number = info_ls[1].split(".")
+            if len(port_number) != 4:
+                syntax_correct = False
+            for num in port_number:
+                if int(num) < 0 or int(num)>255:
+                    syntax_correct = False
+    if not syntax_correct:
+        print("S: "+error_msg,end="\r\n",flush=True)
+        datasocket.send((error_msg+"\r\n").encode())
+    return syntax_correct
+
 def main():
     # TODO
     BUFLEN = 1024
@@ -84,17 +108,18 @@ def main():
         while True:
             recved = conn.recv(BUFLEN)
             info = recved.decode()
-            if not recved or info=="QUIT":
-                print("going to break")
-                break
-            print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-            if (info[0:4]=="EHLO" and stage==1):
-                EHLO(conn,info)
-                stage = 2
-            elif(info[0:4]=="QUIT"):
-                QUIT(conn)
-            else:
-                detect_message(conn,recved)
+            if check_syntax(info):
+                if not recved or info=="QUIT":
+                    print("going to break")
+                    break
+                print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+                if (info[0:4]=="EHLO" and stage==1):
+                    EHLO(conn,info)
+                    stage = 2
+                elif (info[0:4]=="MAIL" and stage==3):
+                    pass
+                elif(info[0:4]=="QUIT"):
+                    QUIT(conn)
         conn.close()
         s.close()
 
