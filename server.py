@@ -133,6 +133,7 @@ def main():
             if not recved:
                 break
             print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+            print(stage,flush=True)
             if check_syntax(conn, info):
                 if info[0:4]=="EHLO" and stage==1:
                     EHLO(conn,info)
