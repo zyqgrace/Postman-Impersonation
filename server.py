@@ -66,33 +66,54 @@ def check_stage(datasocket, info,stage):
     datasocket.send((respond_msg+"\r\n").encode())
     return False
 
+def isletdig(char):
+    return char.isalpha() or char.isnumeric()
+    
 def check_email_format(info):
     '''
     correct example of info : <bob@bob.org>
     '''
-    part1 = False
-    part2 = False
-    part3 = False
-    
-    if info[0] != '<':
+    Format = False
+    if info[0] != '<' or info[-3:]!=">\r\n":
         return False
-    subdomain = True
-    if info[1]=="-":
+    mailbox = info[1:-3].split("@")
+    if len(mailbox)==1:
         return False
-    i = 0
-    while i < len(info):
-        if not subdomain and info[i]==".":
-            part2 = True
-        elif not subdomain and info[i]=="-":
-            return False
-        if info[i]=="@":
-            subdomain = False
+    i = 1
+    dot = False
+    domain = 0
+    atom_start = True
+    while i < len(info[1:-3]):
+        if atom_start:
+            if not isletdig(info[i]):
+                return False
+        else:
+            if info[i]==".":
+                i+=1
+                atom_start = True
+                if domain ==1:
+                    dot = True
+                continue
+            if domain == 0:
+                if info[i]=="@":
+                    atom_start = True
+                    domain+=1
+                    i+=1
+                    continue
+                if not(isletdig(info[i]) or info[i]=="-"):
+                    return False
+            else:
+                if info[i]=="-":
+                    if i == len(info[1:-3])-1:
+                        return False
+                    i+=1
+                    if not(isletdig(info[i])):
+                        return False
+        atom_start = False
         i+=1
-    if info[-3]==">":
-        part3 = True
-    if part1 == True and part2 == True and part3 == True:
-        return True
-    return False
+    if dot != True:
+        return False
+    return True
 
 def check_syntax(datasocket, info):
     '''
