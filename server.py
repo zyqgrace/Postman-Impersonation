@@ -242,9 +242,9 @@ def read_file(path, sender, receivers, body):
     '''
     filename = None
     cur_time = body[0].strip("\r\n")
-    date_object = datetime.datetime.strptime(cur_time, 
-                  'Date: %a, %d %b %Y %H:%M:%S %z').date()
-    filename = str(int(time.mktime(date_object.timetuple())))+".txt"
+    date_format = datetime.datetime.strptime(cur_time, 
+                  'Date: %a, %d %b %Y %H:%M:%S %z')
+    filename = str(int(datetime.datetime.timestamp(date_format)))+".txt"
     try:
         f = open(path+"/"+filename,"a")
         f.write("FROM: "+sender.replace("\r\n","\n"))
