@@ -18,7 +18,7 @@ def parse_conf_path():
             elif info[0:11] == "client_port":
                 client_port = info[12:]
             elif info[0:8] == "spy_path":
-                send_path = info[9:]
+                spy_path = info[9:]
     except FileNotFoundError:
         sys.exit(1)
     if server_port == None or client_port == None:
@@ -29,24 +29,24 @@ def parse_conf_path():
         sys.exit(2)
     elif spy_path == None:
         sys.exit(2)
-    spy_path = os.path.expanduser(send_path)
+    spy_path = os.path.expanduser(spy_path)
     return int(server_port),int(client_port),spy_path
 
 def main():
     # TODO
     IP = "localhost"
     server_port, client_port, path = parse_conf_path()
-    print(client_port,flush=True)
+    print("client_port: "+client_port,flush=True)
     MAIl_FROM = None
     RCPT_to = []
     text = ''
     filename = None
-    #try:
-    #    pretent_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    #    pretent_client.connect((IP,server_port))
-    #except Exception:
-    #    print("AS: Cannot establish connection",end="\r\n",flush=True)
-    #    sys.exit(3)
+    try:
+        pretent_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        pretent_client.connect((IP,server_port))
+    except Exception:
+        print("AS: Cannot establish connection",end="\r\n",flush=True)
+        sys.exit(3)
 
     try:
         pretent_server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -58,14 +58,14 @@ def main():
         sys.exit(3)
 
     while True:
-        #recved = pretent_client.recv(1024)
-        #info = recved.decode()
-        #if not recved:
-        #    print("AS: Connection lost",end="\r\n",flush=True)
-        #    sys.exit(3)
-        #print("S: "+info.strip("\r\n"),end="\r\n",flush=True)
-        #print("AC: "+info.strip("\r\n"),end="\r\n",flush=True)
-        #conn.send(recved)
+        recved = pretent_client.recv(1024)
+        info = recved.decode()
+        if not recved:
+            print("AS: Connection lost",end="\r\n",flush=True)
+            sys.exit(3)
+        print("S: "+info.strip("\r\n"),end="\r\n",flush=True)
+        print("AC: "+info.strip("\r\n"),end="\r\n",flush=True)
+        conn.send(recved)
 
         recved = conn.recv(1024)
         info = recved.decode()
@@ -74,7 +74,7 @@ def main():
             sys.exit(3)
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
-        #pretent_client.send(recved)
+        pretent_client.send(recved)
         
 if __name__ == '__main__':
     main()
