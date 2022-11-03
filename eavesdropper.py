@@ -47,6 +47,7 @@ def main():
     except Exception:
         print("AS: Cannot establish connection",end="\r\n",flush=True)
         sys.exit(3)
+
     try:
         pretent_server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         pretent_server.bind((IP,client_port))
@@ -64,9 +65,9 @@ def main():
             sys.exit(3)
         print("S: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AC: "+info.strip("\r\n"),end="\r\n",flush=True)
-        pretent_server.send(recved)
+        conn.send(recved)
 
-        recved = pretent_server.recv(1024)
+        recved = conn.recv(1024)
         info = recved.decode()
         if not recved:
             print("AC: Connection lost",end="\r\n",flush=True)
