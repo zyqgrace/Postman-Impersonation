@@ -184,7 +184,8 @@ def AUTH(datasocket,info):
         result = "535 Authentication credentials invalid"
     print("S: "+result,end="\r\n",flush=True)
     datasocket.send((result+"\r\n").encode())
-    
+    return False
+
 def MAIL(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
     print("S: "+respond_msg,end="\r\n",flush=True)
@@ -257,8 +258,8 @@ def main():
                         EHLO(conn,info)
                         stage = 1
                     elif info[0:4]=="AUTH":
-                        AUTH(conn,info)
-                        stage = 2
+                        if AUTH(conn,info):
+                            stage = 2
                     elif info[0:4]=="MAIL":
                         MAIL(conn,info)
                         stage = 2
