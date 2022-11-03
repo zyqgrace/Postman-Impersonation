@@ -246,12 +246,12 @@ def read_file(path, sender, receivers, body):
     filename = str(int(datetime.datetime.timestamp(date_format)))+".txt"
     try:
         f = open(path+"/"+filename,"a")
-        f.write("FROM: "+sender.replace("\r\n","\n"))
+        f.write("From: "+sender.replace("\r\n","\n"))
         receiver_str = ""
         for i in range(len(receivers)-1):
             receiver_str+=(receivers[i].strip("\r\n")+",")
         receiver_str+=receivers[-1].strip("\r\n")
-        f.write("TO: "+receiver_str+"\n")
+        f.write("To: "+receiver_str+"\n")
         for text in body:
             text = text.replace("\r\n","\n")
             f.write(text)
@@ -294,7 +294,7 @@ def main():
                         if AUTH(conn,info):
                             stage = 2
                     elif info[0:4]=="MAIL":
-                        MAIL_from = info.split(" ")[1]
+                        MAIL_from = info.split(" ")[1][5:]
                         MAIL(conn,info)
                         stage = 2
                     elif info[0:4]=="RCPT":
