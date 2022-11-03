@@ -241,9 +241,8 @@ def read_file(path, sender, receivers, body):
     read file to given path
     '''
     filename = None
-    time = body[0].strip("\r\n")
-    print(body,flush=True)
-    date_object = datetime.datetime.strptime(time, 
+    cur_time = body[0].strip("\r\n")
+    date_object = datetime.datetime.strptime(cur_time, 
                   'Date: %a, %d %b %Y %H:%M:%S %z').date()
     filename = int(time.mktime(date_object.timetuple()))+".txt"
     try:
