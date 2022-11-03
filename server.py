@@ -6,7 +6,6 @@ import secrets
 import string
 import hmac
 import datetime
-import time
 
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
@@ -299,7 +298,7 @@ def main():
                         MAIL(conn,info)
                         stage = 2
                     elif info[0:4]=="RCPT":
-                        RCPT_to.append(info[8:-3])
+                        RCPT_to.append(info[8:-2])
                         RCPT(conn,info)
                         stage = 3
                     elif info[0:4]=="QUIT":
