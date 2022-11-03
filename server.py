@@ -172,13 +172,19 @@ def AUTH(datasocket,info):
     alphabet = string.ascii_letters + string.digits
     password = ''.join(secrets.choice(alphabet) for i in range(50))
     challenge = base64.b64encode(password.encode())
-    base64_challenge = challenge.decode('ascii')
-    send_msg = "334 "+base64_challenge+"\r\n"
-    datasocket.send(send_msg.encode())
+    send_msg = b"334 "+challenge+b"\r\n"
+    datasocket.send(send_msg)
     anwser = datasocket.recv(256)
-    print(anwser.decode())
-    pass
-
+    base64_answer = base64.b64decode(anwser)
+    client_digest = base64_answer.decode().split(" ")[1]
+    server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
+    if hmac.compare_digest(server_hmac.hexdigest(),client_digest):
+        result = "235 Authentication successful"
+    else:
+        result = "535 Authentication credentials invalid"
+    print("S: "+result,end="\r\n",flush=True)
+    datasocket.send((result+"\r\n").encode())
+    
 def MAIL(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
     print("S: "+respond_msg,end="\r\n",flush=True)
