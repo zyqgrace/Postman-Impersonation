@@ -210,10 +210,13 @@ def NOOP(datasocket,info):
     datasocket.send((respond_msg+"\r\n").encode())
 
 def DATA(datasocket,info):
+    '''
+    return text as a list of all content from Date
+    '''
     respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
     print("S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
-    text = ""
+    text = []
     while True:
         recved = datasocket.recv(1024)
         info = recved.decode()
@@ -224,7 +227,7 @@ def DATA(datasocket,info):
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         if info == ".\r\n":
             break
-        text+=info
+        text.append(info)
         respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
         print("S: "+respond_msg,end="\r\n",flush=True)
         datasocket.send((respond_msg+"\r\n").encode())
@@ -239,7 +242,7 @@ def read_file(path, sender, receivers, body):
     '''
     filename = None
     time = body[0].strip("\r\n")
-    print(time,flush=True)
+    print(body,flush=True)
     date_object = datetime.datetime.strptime(time, 
                   'Date: %a, %d %b %Y %H:%M:%S %z').date()
     filename = int(time.mktime(date_object.timetuple()))+".txt"
