@@ -36,41 +36,44 @@ def main():
     # TODO
     IP = "localhost"
     server_port, client_port, path = parse_conf_path()
-    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    
     MAIl_FROM = None
     RCPT_to = []
     text = ''
     filename = None
-    print(server_port, client_port, path)
     try:
-        server.bind((IP,server_port))
-        server.listen()
-        conn, addr = server.accept()
-    except Exception:
-        print("AC: Connection lost",end="\r\n",flush=True)
-        sys.exit(3)
-    try:
-        client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        client.connect((IP,client_port))
+        pretent_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        pretent_client.connect((IP,server_port))
     except Exception:
         print("AS: Cannot establish connection",end="\r\n",flush=True)
         sys.exit(3)
+    try:
+        pretent_server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        pretent_server.bind((IP,client_port))
+        pretent_server.listen()
+        conn, addr = pretent_server.accept()
+    except Exception:
+        print("AC: Connection lost",end="\r\n",flush=True)
+        sys.exit(3)
+
     while True:
-        recved = conn.recv(1024)
+        recved = pretent_client.recv(1024)
         info = recved.decode()
         if not recved:
-            break
-        print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-        print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
-        if info[0:4]=="MAIL":
-            pass
-        conn.send(recved)
-        recved_from_server = client.recv(1024)
-        if not recved_from_server:
-            break
-        info = recved_from_server.decode()
+            print("AS: Connection lost",end="\r\n",flush=True)
+            sys.exit(3)
         print("S: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AC: "+info.strip("\r\n"),end="\r\n",flush=True)
-        client.send(recved_from_server)
+        pretent_server.send(recved)
+
+        recved = pretent_server.recv(1024)
+        info = recved.decode()
+        if not recved:
+            print("AC: Connection lost",end="\r\n",flush=True)
+            sys.exit(3)
+        print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+        print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
+        pretent_client.send(recved)
+        
 if __name__ == '__main__':
     main()
