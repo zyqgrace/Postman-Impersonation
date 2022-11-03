@@ -239,6 +239,7 @@ def read_file(path, sender, receivers, body):
     '''
     filename = None
     time = body[0].strip("\r\n")
+    print(time,flush=True)
     date_object = datetime.datetime.strptime(time, 
                   'Date: %a, %d %b %Y %H:%M:%S %z').date()
     filename = int(time.mktime(date_object.timetuple()))+".txt"
