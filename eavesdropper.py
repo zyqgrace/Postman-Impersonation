@@ -41,6 +41,7 @@ def main():
     RCPT_to = []
     text = ''
     filename = None
+    print(server_port, client_port, path)
     try:
         server.bind((IP,server_port))
         server.listen()
