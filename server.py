@@ -1,6 +1,10 @@
 import os
 import socket
 import sys
+import base64
+import secrets
+import string
+import hmac
 
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
@@ -149,7 +153,10 @@ def check_syntax(datasocket, info):
                 syntax_correct = check_email_format(info_ls[1][3:])
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
-            syntax_correct = False
+            error_msg = "504 Unrecognized authentication type"
+            print("S: "+error_msg,end="\r\n",flush=True)
+            datasocket.send((error_msg+"\r\n").encode())
+            return False
     elif info_ls[0][0:4]=="RSET":
         if len(info_ls)!=1:
             syntax_correct = False
@@ -162,6 +169,14 @@ def check_syntax(datasocket, info):
     return syntax_correct
 
 def AUTH(datasocket,info):
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for i in range(50))
+    challenge = base64.b64encode(password.encode())
+    base64_challenge = challenge.decode('ascii')
+    send_msg = "334 "+base64_challenge+"\r\n"
+    datasocket.send(send_msg.encode())
+    anwser = datasocket.recv(256)
+    print(anwser.decode())
     pass
 
 def MAIL(datasocket,info):
@@ -183,6 +198,7 @@ def NOOP(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
     print("S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
+
 def DATA(datasocket,info):
     respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
     print("S: "+respond_msg,end="\r\n",flush=True)
@@ -235,6 +251,7 @@ def main():
                         EHLO(conn,info)
                         stage = 1
                     elif info[0:4]=="AUTH":
+                        AUTH(conn,info)
                         stage = 2
                     elif info[0:4]=="MAIL":
                         MAIL(conn,info)
