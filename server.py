@@ -5,6 +5,8 @@ import base64
 import secrets
 import string
 import hmac
+import datetime
+import time
 
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
@@ -32,6 +34,7 @@ def parse_conf_path():
         sys.exit(2)
     elif send_path == None:
         sys.exit(2)
+    send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
 
 def EHLO(data_socket,message):
@@ -230,6 +233,30 @@ def DATA(datasocket,info):
     datasocket.send((respond_msg+"\r\n").encode())
     return text
 
+def read_file(path, sender, receivers, body):
+    '''
+    read file to given path
+    '''
+    filename = None
+    time = body[0].strip("\r\n")
+    date_object = datetime.datetime.strptime(time, 
+                  'Date: %a, %d %b %Y %H:%M:%S %z').date()
+    filename = int(time.mktime(date_object.timetuple()))+".txt"
+    try:
+        f = open(path+"/"+filename,"a")
+        f.write("FROM: "+sender.replace("\r\n","\n"))
+        receiver_str = ""
+        for i in range(len(receivers)-1):
+            receiver_str+=(receivers[i].strip("\r\n")+",")
+        receiver_str+=receivers[-1].strip("\r\n")
+        f.write("TO: "+receiver_str+"\n")
+        for text in body:
+            text = text.replace("\r\n","\n")
+            f.write(text)
+        f.close()
+    except Exception:
+        pass
+
 def main():
     # TODO
     BUFLEN = 1024
@@ -244,6 +271,10 @@ def main():
         print("S: "+send_msg,end="\r\n",flush=True)
         stage = 0
         conn.send((send_msg+"\r\n").encode())
+        MAIL_from = None
+        RCPT_to = []
+        text = ''
+        filename = None
         while True:
             recved = conn.recv(BUFLEN)
             info = recved.decode()
@@ -261,9 +292,11 @@ def main():
                         if AUTH(conn,info):
                             stage = 2
                     elif info[0:4]=="MAIL":
+                        MAIL_from = info.split(" ")[1]
                         MAIL(conn,info)
                         stage = 2
                     elif info[0:4]=="RCPT":
+                        RCPT_to.append(info[8:-3])
                         RCPT(conn,info)
                         stage = 3
                     elif info[0:4]=="QUIT":
@@ -274,7 +307,8 @@ def main():
                         if stage != 0:
                             stage = 1
                     elif info[0:4]=="DATA":
-                        DATA(conn,info)
+                        text = DATA(conn,info)
+                        read_file(path,MAIL_from,RCPT_to,text)
                     elif info[0:4]=="NOOP":
                         NOOP(conn,info)
         conn.close()
