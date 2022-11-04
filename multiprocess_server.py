@@ -278,7 +278,7 @@ def main():
                 break
             pid = os.fork()
             if pid == 0:
-                prefix = f'[{parent_pid}][{number}]'
+                prefix = f'[{parent_pid}][{number:02d}]'
                 send_msg = "220 Service ready"
                 print(prefix+"S: "+send_msg,end="\r\n",flush=True)
                 stage = 0
