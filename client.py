@@ -89,8 +89,6 @@ def read_text(filepath):
 
 def send_email_via_server(client_socket, email):
     with client_socket:
-        if check_status_code(client_socket, 220):
-            EHLO(client_socket)
         if check_status_code(client_socket,250):
             mail_from = "MAIL FROM:"+email.From+"\r\n"
             print("C: "+"MAIL FROM:"+email.From,end='\r\n',flush=True)
@@ -136,14 +134,17 @@ def RCPT(client_socket,recipients):
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
-    data = server_data.decode().strip("\r\n")
-    print("S: "+data,end="\r\n",flush=True)
-    data_ls = data.split()
-    actual_status_code = int(data_ls[0])
+    recv_ls = server_data.decode().strip("\r\n")
+    for data in recv_ls:
+        print("S: "+data,end="\r\n",flush=True)
+    actual_status_code = int(recv_ls[0][0:3])
     if actual_status_code != status_code:
         return False
     else:
         return True
+
+def AUTH():
+    pass
 
 def main():
     # TODO
@@ -158,7 +159,10 @@ def main():
         except ConnectionRefusedError:
             print("C: Cannot establish connection",end="\r\n",flush=True) 
             sys.exit(3)
+        if check_status_code(dataSocket, 220):
+            EHLO(dataSocket)
         send_email_via_server(dataSocket,email)
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()
