@@ -1,6 +1,7 @@
 import os
 import socket
 import sys
+import datetime
 
 def parse_conf_path():
     server_port = None
@@ -32,13 +33,35 @@ def parse_conf_path():
     spy_path = os.path.expanduser(spy_path)
     return int(server_port),int(client_port),spy_path
 
+def write_file(path,sender,receivers,body):
+    filename = None
+    cur_time = body[0].strip("\r\n")
+    date_format = datetime.datetime.strptime(cur_time, 
+                  'Date: %a, %d %b %Y %H:%M:%S %z')
+    filename = str(int(datetime.datetime.timestamp(date_format)))+".txt"
+    try:
+        f = open(path+"/"+filename,"a")
+        f.write("From: "+sender + "\n")
+        receiver_str = ""
+        for i in range(len(receivers)-1):
+            receiver_str+=(receivers[i].strip("\r\n")+",")
+        receiver_str+=receivers[-1].strip("\r\n")
+        f.write("To: "+receiver_str+"\n")
+        for text in body:
+            text = text.replace("\r\n","\n")
+            f.write(text)
+        f.close()
+    except Exception:
+        sys.exit(1)
+
 def main():
     # TODO
     IP = "localhost"
     server_port, client_port, path = parse_conf_path()
-    MAIl_FROM = None
+    MAIl_from = None
     RCPT_to = []
-    text = ''
+    text = []
+    record=False
     filename = None
     try:
         AS = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -58,12 +81,14 @@ def main():
 
     while True:
         recved = AS.recv(1024)
-        info = recved.decode()
+        info = (recved.decode()).split("\r\n")
         if not recved:
             print("AS: Connection lost",end="\r\n",flush=True)
             sys.exit(3)
-        print("S: "+info.strip("\r\n"),end="\r\n",flush=True)
-        print("AC: "+info.strip("\r\n"),end="\r\n",flush=True)
+        for i in info[:-1]:
+            print("S: "+i,end="\r\n",flush=True)
+        for i in info[:-1]:
+            print("AC: "+i,end="\r\n",flush=True)
         conn.send(recved)
 
         recved = conn.recv(1024)
@@ -73,6 +98,17 @@ def main():
             sys.exit(3)
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
+        if info == ".\r\n":
+            record = False
+            write_file(path,MAIL_from,RCPT_to,text)
+        if record:
+            text.append(info)
+        if info[0:4]=="MAIL":
+            MAIL_from = info[10:-2]
+        if info[0:4]=="RCPT":
+            RCPT_to.append(info[8:-2])
+        if info[0:4]=="DATA":
+            record = True
         AS.send(recved)
         
 if __name__ == '__main__':
