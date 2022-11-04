@@ -151,14 +151,14 @@ def main():
     PORT, send_path = parse_conf()
     file_paths = list_directory(send_path)
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    for filepath in file_paths:
+        email = read_text(filepath)
+        send_email_via_server(dataSocket,email)
     try:
         dataSocket.connect((IP,PORT))
     except ConnectionRefusedError:
         print("C: Cannot establish connection",end="\r\n",flush=True) 
         sys.exit(3)
-    for filepath in file_paths:
-        email = read_text(filepath)
-        send_email_via_server(dataSocket,email)
 
 if __name__ == '__main__':
     main()
