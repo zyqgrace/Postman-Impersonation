@@ -268,12 +268,13 @@ def main():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((IP,PORT))
         s.listen()
+        s.settimeout(20)
         while True:
             try:
                 conn, addr = s.accept()
                 number+=1
-            except Exception:
-                sys.exit(1)
+            except TimeoutError:
+                break
             pid = os.fork()
             if pid == 0:
                 send_msg = "220 Service ready"
@@ -320,9 +321,9 @@ def main():
                                 read_file(path,MAIL_from,RCPT_to,text)
                             elif info[0:4]=="NOOP":
                                 NOOP(conn,info)
-                conn.close()
-                s.close()
                 os.exit()
+        conn.close()
+        s.close()
 
 if __name__ == '__main__':
     main()
