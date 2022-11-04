@@ -83,8 +83,8 @@ def read_text(filepath):
         i+=1
     if From == None or To == None or Date == None or Subject == None:
         print("C: "+os.path.abspath(filepath)+": Bad formation",end="\r\n",flush=True)
-        send_status = False
-    return send_status, Email(From, To, Date, Subject, Body)
+        sys.exit(0)
+    return Email(From, To, Date, Subject, Body)
 
 
 def send_email_via_server(client_socket, email):
@@ -157,9 +157,8 @@ def main():
         print("C: Cannot establish connection",end="\r\n",flush=True) 
         sys.exit(3)
     for filepath in file_paths:
-        send_status, email = read_text(filepath)
-        if send_status:
-            send_email_via_server(dataSocket,email)
+        email = read_text(filepath)
+        send_email_via_server(dataSocket,email)
 
 if __name__ == '__main__':
     main()
