@@ -268,60 +268,61 @@ def main():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((IP,PORT))
         s.listen()
-        try:
-            conn, addr = s.accept()
-        except Exception:
-            sys.exit(1)
-        pid = os.fork()
-        number=+1
-        if pid == 0:
-            send_msg = "220 Service ready"
-            print("S: "+send_msg,end="\r\n",flush=True)
-            stage = 0
-            conn.send((send_msg+"\r\n").encode())
-            MAIL_from = None
-            RCPT_to = []
-            text = ''
-            filename = None
-            while True:
-                recved = conn.recv(BUFLEN)
-                info = recved.decode()
-                if not recved:
-                    err_msg = "Connection lost"
-                    print("S: "+err_msg,end="\r\n",flush=True)
-                    break
-                print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-                if check_stage(conn,info[0:4],stage):
-                    if check_syntax(conn, info):
-                        if info[0:4]=="EHLO":
-                            EHLO(conn,info)
-                            stage = 1
-                        elif info[0:4]=="AUTH":
-                            if AUTH(conn,info):
-                                stage = 2
-                        elif info[0:4]=="MAIL":
-                            MAIL_from = info.split(" ")[1][5:]
-                            MAIL(conn,info)
-                            stage = 2
-                        elif info[0:4]=="RCPT":
-                            RCPT_to.append(info[8:-2])
-                            RCPT(conn,info)
-                            stage = 3
-                        elif info[0:4]=="QUIT":
-                            QUIT(conn)
-                            break
-                        elif info[0:4]=="RSET":
-                            RSET(conn,info)
-                            if stage != 0:
+        while True:
+            try:
+                conn, addr = s.accept()
+                number+=1
+            except Exception:
+                sys.exit(1)
+            pid = os.fork()
+            if pid == 0:
+                send_msg = "220 Service ready"
+                print(f"[{pid}][{number}]: "+send_msg,end="\r\n",flush=True)
+                stage = 0
+                conn.send((send_msg+"\r\n").encode())
+                MAIL_from = None
+                RCPT_to = []
+                text = ''
+                filename = None
+                while True:
+                    recved = conn.recv(BUFLEN)
+                    info = recved.decode()
+                    if not recved:
+                        err_msg = "Connection lost"
+                        print("S: "+err_msg,end="\r\n",flush=True)
+                        break
+                    print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+                    if check_stage(conn,info[0:4],stage):
+                        if check_syntax(conn, info):
+                            if info[0:4]=="EHLO":
+                                EHLO(conn,info)
                                 stage = 1
-                        elif info[0:4]=="DATA":
-                            text = DATA(conn,info)
-                            read_file(path,MAIL_from,RCPT_to,text)
-                        elif info[0:4]=="NOOP":
-                            NOOP(conn,info)
-            conn.close()
-            s.close()
-            os.exit()
+                            elif info[0:4]=="AUTH":
+                                if AUTH(conn,info):
+                                    stage = 2
+                            elif info[0:4]=="MAIL":
+                                MAIL_from = info.split(" ")[1][5:]
+                                MAIL(conn,info)
+                                stage = 2
+                            elif info[0:4]=="RCPT":
+                                RCPT_to.append(info[8:-2])
+                                RCPT(conn,info)
+                                stage = 3
+                            elif info[0:4]=="QUIT":
+                                QUIT(conn)
+                                break
+                            elif info[0:4]=="RSET":
+                                RSET(conn,info)
+                                if stage != 0:
+                                    stage = 1
+                            elif info[0:4]=="DATA":
+                                text = DATA(conn,info)
+                                read_file(path,MAIL_from,RCPT_to,text)
+                            elif info[0:4]=="NOOP":
+                                NOOP(conn,info)
+                conn.close()
+                s.close()
+                os.exit()
 
 if __name__ == '__main__':
     main()
