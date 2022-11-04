@@ -45,19 +45,19 @@ def EHLO(data_socket,message,prefix):
     command = message.split(" ")
     if (len(command)==1):
         respond_message = "501 Syntax error in parameters or arguments"
-        print(prefix+": "+respond_message,end="\r\n",flush=True)
+        print(prefix+"S: "+respond_message,end="\r\n",flush=True)
         data_socket.send((respond_message+"\r\n").encode())
     else:
         respond_msg = "250 127.0.0.1"
         print(prefix+": "+respond_msg,end="\r\n",flush=True)
         #authenticity check
         auth_msg = "250 AUTH CRAM-MD5"
-        print(prefix+": "+auth_msg,end="\r\n",flush=True)
+        print(prefix+"S: "+auth_msg,end="\r\n",flush=True)
         data_socket.send((respond_msg+"\r\n"+auth_msg+"\r\n").encode())
 
 def QUIT(data_socket,prefix):
     send_msg = "221 Service closing transmission channel"
-    print(prefix+": "+send_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+send_msg,end="\r\n",flush=True)
     data_socket.send((send_msg+"\r\n").encode())
 
 def check_stage(datasocket, info,stage,prefix):
@@ -68,7 +68,7 @@ def check_stage(datasocket, info,stage,prefix):
     if info == "QUIT" or info =="RSET" or info == "NOOP":
         return True
     respond_msg = "503 Bad sequence of commands"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
     return False
 
@@ -156,7 +156,7 @@ def check_syntax(datasocket, info,prefix):
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             error_msg = "504 Unrecognized authentication type"
-            print(prefix+": "+error_msg,end="\r\n",flush=True)
+            print(prefix+"S: "+error_msg,end="\r\n",flush=True)
             datasocket.send((error_msg+"\r\n").encode())
             return False
     elif info_ls[0][0:4]=="RSET":
@@ -166,7 +166,7 @@ def check_syntax(datasocket, info,prefix):
         if len(info_ls)!=1:
             syntax_correct = False
     if not syntax_correct:
-        print(prefix+": "+error_msg,end="\r\n",flush=True)
+        print(prefix+"S: "+error_msg,end="\r\n",flush=True)
         datasocket.send((error_msg+"\r\n").encode())
     return syntax_correct
 
@@ -184,28 +184,28 @@ def AUTH(datasocket,info,prefix):
         result = "235 Authentication successful"
     else:
         result = "535 Authentication credentials invalid"
-    print(prefix+": "+result,end="\r\n",flush=True)
+    print(prefix+"S: "+result,end="\r\n",flush=True)
     datasocket.send((result+"\r\n").encode())
     return False
 
 def MAIL(datasocket,info,prefix):
     respond_msg = "250 Requested mail action okay completed"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
 
 def RCPT(datasocket,info,prefix):
     respond_msg = "250 Requested mail action okay completed"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
 
 def RSET(datasocket,info,prefix):
     respond_msg = "250 Requested mail action okay completed"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
 
 def NOOP(datasocket,info,prefix):
     respond_msg = "250 Requested mail action okay completed"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
 
 def DATA(datasocket,info,prefix):
@@ -213,7 +213,7 @@ def DATA(datasocket,info,prefix):
     return text as a list of all content from Date
     '''
     respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
     text = []
     while True:
@@ -221,17 +221,17 @@ def DATA(datasocket,info,prefix):
         info = recved.decode()
         if not recved:
             err_msg = "Connection lost"
-            print(prefix+": "+err_msg,end="\r\n",flush=True)
+            print(prefix+"S: "+err_msg,end="\r\n",flush=True)
             break
-        print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+        print(prefix+"C: "+info.strip("\r\n"),end="\r\n",flush=True)
         if info == ".\r\n":
             break
         text.append(info)
         respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
-        print(prefix+": "+respond_msg,end="\r\n",flush=True)
+        print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
         datasocket.send((respond_msg+"\r\n").encode())
     respond_msg = "250 Requested mail action okay completed"
-    print(prefix+": "+respond_msg,end="\r\n",flush=True)
+    print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
     datasocket.send((respond_msg+"\r\n").encode())
     return text
 
@@ -280,7 +280,7 @@ def main():
             if pid == 0:
                 prefix = f'[{parent_pid}][{number}]'
                 send_msg = "220 Service ready"
-                print(prefix+": "+send_msg,end="\r\n",flush=True)
+                print(prefix+"S: "+send_msg,end="\r\n",flush=True)
                 stage = 0
                 conn.send((send_msg+"\r\n").encode())
                 MAIL_from = None
@@ -292,9 +292,9 @@ def main():
                     info = recved.decode()
                     if not recved:
                         err_msg = "Connection lost"
-                        print(prefix+": "+err_msg,end="\r\n",flush=True)
+                        print(prefix+"S: "+err_msg,end="\r\n",flush=True)
                         break
-                    print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+                    print(prefix+"C: "+info.strip("\r\n"),end="\r\n",flush=True)
                     if check_stage(conn,info[0:4],stage,prefix):
                         if check_syntax(conn, info,prefix):
                             if info[0:4]=="EHLO":
