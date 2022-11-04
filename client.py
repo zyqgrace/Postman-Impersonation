@@ -150,9 +150,9 @@ def main():
     IP = 'localhost'
     PORT, send_path = parse_conf()
     file_paths = list_directory(send_path)
-    dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for filepath in file_paths:
         email = read_text(filepath)
+        dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             dataSocket.connect((IP,PORT))
         except ConnectionRefusedError:
