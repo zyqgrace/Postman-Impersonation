@@ -295,7 +295,7 @@ def main():
                         print(prefix+": "+err_msg,end="\r\n",flush=True)
                         break
                     print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-                    if check_stage(conn,info[0:4],stage):
+                    if check_stage(conn,info[0:4],stage,prefix):
                         if check_syntax(conn, info,prefix):
                             if info[0:4]=="EHLO":
                                 EHLO(conn,info,prefix)
