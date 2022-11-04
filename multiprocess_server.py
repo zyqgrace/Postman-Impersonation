@@ -323,7 +323,7 @@ def main():
                                 read_file(path,MAIL_from,RCPT_to,text,prefix)
                             elif info[0:4]=="NOOP":
                                 NOOP(conn,info)
-                os._exit()
+                os._exit(os.EX_OK)
         conn.close()
         s.close()
 
