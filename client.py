@@ -153,12 +153,12 @@ def main():
     dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for filepath in file_paths:
         email = read_text(filepath)
+        try:
+            dataSocket.connect((IP,PORT))
+        except ConnectionRefusedError:
+            print("C: Cannot establish connection",end="\r\n",flush=True) 
+            sys.exit(3)
         send_email_via_server(dataSocket,email)
-    try:
-        dataSocket.connect((IP,PORT))
-    except ConnectionRefusedError:
-        print("C: Cannot establish connection",end="\r\n",flush=True) 
-        sys.exit(3)
 
 if __name__ == '__main__':
     main()
