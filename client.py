@@ -135,7 +135,7 @@ def RCPT(client_socket,recipients):
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
     recv_ls = server_data.decode().split("\r\n")
-    for data in recv_ls:
+    for data in recv_ls[:-1]:
         print("S: "+data,end="\r\n",flush=True)
     actual_status_code = int(recv_ls[0][0:3])
     if actual_status_code != status_code:
