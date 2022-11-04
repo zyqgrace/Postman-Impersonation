@@ -94,8 +94,7 @@ def main():
         recved = conn.recv(1024)
         info = recved.decode()
         if not recved:
-            print("AC: Connection lost",end="\r\n",flush=True)
-            sys.exit(3)
+            break
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
         if info == ".\r\n":
@@ -110,6 +109,8 @@ def main():
         if info[0:4]=="DATA":
             record = True
         AS.send(recved)
-        
+    AS.close()
+    conn.close()
+    AC.close()
 if __name__ == '__main__':
     main()
