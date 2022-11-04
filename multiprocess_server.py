@@ -271,13 +271,12 @@ def main():
         s.listen()
         s.settimeout(20)
         while True:
-            if pid != 0:
-                try:
-                    conn, addr = s.accept()
-                    number+=1
-                except TimeoutError:
-                    break
-                pid = os.fork()
+            try:
+                conn, addr = s.accept()
+                number+=1
+            except TimeoutError:
+                break
+            pid = os.fork()
             if pid == 0:
                 prefix = f'[{parent_pid}][{number}]'
                 send_msg = "220 Service ready"
