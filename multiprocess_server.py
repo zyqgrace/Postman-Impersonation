@@ -332,6 +332,8 @@ def main():
                                 stage = 3
                             elif info[0:4]=="QUIT":
                                 stdout+=QUIT(conn,prefix)
+                                for output in stdout:
+                                    print(output,end="\r\n",flush=True)
                                 break
                             elif info[0:4]=="RSET":
                                 stdout+=RSET(conn,info,prefix)
@@ -343,8 +345,6 @@ def main():
                                 read_file(path,MAIL_from,RCPT_to,text,prefix)
                             elif info[0:4]=="NOOP":
                                 stdout+=NOOP(conn,info)
-                for output in stdout:
-                    print(output,end="\r\n",flush=True)
                 os._exit(os.EX_OK)
         conn.close()
         s.close()
