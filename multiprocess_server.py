@@ -49,7 +49,7 @@ def EHLO(data_socket,message,prefix):
         data_socket.send((respond_message+"\r\n").encode())
     else:
         respond_msg = "250 127.0.0.1"
-        print(prefix+": "+respond_msg,end="\r\n",flush=True)
+        print(prefix+"S: "+respond_msg,end="\r\n",flush=True)
         #authenticity check
         auth_msg = "250 AUTH CRAM-MD5"
         print(prefix+"S: "+auth_msg,end="\r\n",flush=True)
