@@ -296,31 +296,31 @@ def main():
                         break
                     print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
                     if check_stage(conn,info[0:4],stage):
-                        if check_syntax(conn, info):
+                        if check_syntax(conn, info,prefix):
                             if info[0:4]=="EHLO":
                                 EHLO(conn,info,prefix)
                                 stage = 1
                             elif info[0:4]=="AUTH":
-                                if AUTH(conn,info):
+                                if AUTH(conn,info,prefix):
                                     stage = 2
                             elif info[0:4]=="MAIL":
                                 MAIL_from = info.split(" ")[1][5:]
-                                MAIL(conn,info)
+                                MAIL(conn,info,prefix)
                                 stage = 2
                             elif info[0:4]=="RCPT":
                                 RCPT_to.append(info[8:-2])
-                                RCPT(conn,info)
+                                RCPT(conn,info,prefix)
                                 stage = 3
                             elif info[0:4]=="QUIT":
-                                QUIT(conn)
+                                QUIT(conn,prefix)
                                 break
                             elif info[0:4]=="RSET":
-                                RSET(conn,info)
+                                RSET(conn,info,prefix)
                                 if stage != 0:
                                     stage = 1
                             elif info[0:4]=="DATA":
-                                text = DATA(conn,info)
-                                read_file(path,MAIL_from,RCPT_to,text)
+                                text = DATA(conn,info,prefix)
+                                read_file(path,MAIL_from,RCPT_to,text,prefix)
                             elif info[0:4]=="NOOP":
                                 NOOP(conn,info)
                 os._exit()
