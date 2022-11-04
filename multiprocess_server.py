@@ -243,7 +243,7 @@ def DATA(datasocket,info,prefix):
         return_msg.append(prefix+"S: "+respond_msg)
         datasocket.send((respond_msg+"\r\n").encode())
     respond_msg = "250 Requested mail action okay completed"
-    datasocket.send(prefix+"S: "+respond_msg)
+    return_msg.append(prefix+"S: "+respond_msg)
     datasocket.send((respond_msg+"\r\n").encode())
     return text,return_msg
 
