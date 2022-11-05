@@ -27,16 +27,17 @@ def parse_conf_path():
                 send_path = info[11:]
     except FileNotFoundError:
         sys.exit(1)
-    if server_port.isnumeric() == False:
+    if server_port == None or send_path == None:
         sys.exit(2)
     elif int(server_port) <= 1024:
-        sys.exit(2)
-    elif send_path == None:
         sys.exit(2)
     send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
 
 def send_code(datasocket,num):
+    '''
+    return list of send code
+    '''
     code = {
         220:"220 Service ready",
         250:"250 Requested mail action okay completed",
@@ -48,9 +49,8 @@ def send_code(datasocket,num):
         535: "535 Authentication credentials invalid",
         354:"354 Start mail input end <CRLF>.<CRLF>"
     }
-    print("S: "+code[num],end="\r\n",flush=True)
     datasocket.send((code[num]+"\r\n").encode())
-    return "S: "+code[num]
+    return ["S: "+code[num]]
 
 def EHLO(data_socket):
     '''
@@ -66,11 +66,6 @@ def EHLO(data_socket):
     return_msg.append("S: "+respond_msg)
     return_msg.append("S: "+auth_msg)
     return return_msg
-
-def QUIT(data_socket):
-    send_msg = "221 Service closing transmission channel"
-    data_socket.send((send_msg+"\r\n").encode())
-    return ["S: "+send_msg]
 
 def check_stage(datasocket, info,stage):
     sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["RCPT","DATA"]]
@@ -167,10 +162,8 @@ def check_syntax(datasocket, info):
                 syntax_correct = check_email_format(info_ls[1][3:])
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
-            error_msg = "504 Unrecognized authentication type"
-            return_msg.append("S: "+error_msg)
-            datasocket.send((error_msg+"\r\n").encode())
-            return False
+            return_msg = send_code(datasocket,504)
+            return False,return_msg
     elif info_ls[0][0:4]=="RSET":
         if len(info_ls)!=1:
             syntax_correct = False
@@ -201,40 +194,12 @@ def AUTH(datasocket,info):
     datasocket.send((result+"\r\n").encode())
     return False,return_msg
 
-def MAIL(datasocket,info):
-    return_msg = []
-    respond_msg = "250 Requested mail action okay completed"
-    return_msg.append("S: "+respond_msg)
-    datasocket.send((respond_msg+"\r\n").encode())
-    return return_msg
-
-def RCPT(datasocket,info):
-    return_msg = []
-    respond_msg = "250 Requested mail action okay completed"
-    return_msg.append("S: "+respond_msg)
-    datasocket.send((respond_msg+"\r\n").encode())
-    return return_msg
-
-def RSET(datasocket,info):
-    return_msg = []
-    respond_msg = "250 Requested mail action okay completed"
-    return_msg.append("S: "+respond_msg)
-    datasocket.send((respond_msg+"\r\n").encode())
-    return return_msg
-
-def NOOP(datasocket,info):
-    respond_msg = "250 Requested mail action okay completed"
-    datasocket.send((respond_msg+"\r\n").encode())
-    return ["S: "+respond_msg]
-
 def DATA(datasocket,info):
     '''
     return text as a list of all content from Date
     '''
     return_msg = []
-    respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
-    return_msg.append("S: "+respond_msg)
-    datasocket.send((respond_msg+"\r\n").encode())
+    return_msg+=send_code(datasocket,354)
     text = []
     while True:
         recved = datasocket.recv(1024)
@@ -247,12 +212,8 @@ def DATA(datasocket,info):
         if info == ".\r\n":
             break
         text.append(info)
-        respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
-        return_msg.append("S: "+respond_msg)
-        datasocket.send((respond_msg+"\r\n").encode())
-    respond_msg = "250 Requested mail action okay completed"
-    return_msg.append("S: "+respond_msg)
-    datasocket.send((respond_msg+"\r\n").encode())
+        return_msg+=send_code(datasocket,354)
+    return_msg+=send_code(datasocket,250)
     return text,return_msg
 
 def write_file(path, sender, receivers, body,prefix):
@@ -261,9 +222,12 @@ def write_file(path, sender, receivers, body,prefix):
     '''
     filename = None
     cur_time = body[0].strip("\r\n")
-    date_format = datetime.datetime.strptime(cur_time, 
-                  'Date: %a, %d %b %Y %H:%M:%S %z')
-    filename = prefix+str(int(datetime.datetime.timestamp(date_format)))+".txt"
+    try:
+        date_format = datetime.datetime.strptime(cur_time, 
+                    'Date: %a, %d %b %Y %H:%M:%S %z')
+        filename = prefix+str(int(datetime.datetime.timestamp(date_format)))+".txt"
+    except ValueError:
+        filename = prefix+"unknown.txt"
     try:
         f = open(path+"/"+filename,"a")
         f.write("From: "+sender.replace("\r\n","\n"))
@@ -298,15 +262,12 @@ def main():
             pid = os.fork()
             if pid == 0:
                 prefix = f'[{os.getpid()}][{number:02d}]'
-                send_msg = "220 Service ready"
                 stage = 0
-                conn.send((send_msg+"\r\n").encode())
                 stdout = []
-                stdout.append("S: "+send_msg)
+                stdout+=send_code(conn,220)
                 MAIL_from = None
                 RCPT_to = []
                 text = ''
-                filename = None
                 while True:
                     recved = conn.recv(BUFLEN)
                     info = recved.decode()
@@ -331,17 +292,17 @@ def main():
                                     stage = 2
                             elif info[0:4]=="MAIL":
                                 MAIL_from = info.split(" ")[1][5:]
-                                stdout += MAIL(conn,info)
+                                stdout+=send_code(conn,250)
                                 stage = 2
                             elif info[0:4]=="RCPT":
                                 RCPT_to.append(info[8:-2])
-                                stdout += RCPT(conn,info)
+                                stdout+=send_code(conn,250)
                                 stage = 3
                             elif info[0:4]=="QUIT":
-                                stdout+=QUIT(conn)
+                                stdout+=send_code(conn,221)
                                 break
                             elif info[0:4]=="RSET":
-                                stdout+=RSET(conn,info)
+                                stdout+=send_code(conn,250)
                                 if stage != 0:
                                     stage = 1
                             elif info[0:4]=="DATA":
@@ -349,7 +310,7 @@ def main():
                                 stdout+=return_msg
                                 write_file(path,MAIL_from,RCPT_to,text,prefix)
                             elif info[0:4]=="NOOP":
-                                stdout+=NOOP(conn,info)
+                                stdout+=send_code(conn,250)
                 for output in stdout:
                     print(prefix+output,end="\r\n",flush=True)
                 os._exit(os.EX_OK)

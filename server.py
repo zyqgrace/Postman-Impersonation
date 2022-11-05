@@ -26,7 +26,6 @@ def parse_conf_path():
             elif info[0:10] == "inbox_path":
                 send_path = info[11:]
     except FileNotFoundError:
-        print(sys.argv[1])
         sys.exit(1)
     if server_port == None or send_path == None:
         sys.exit(2)
