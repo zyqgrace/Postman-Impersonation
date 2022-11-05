@@ -236,7 +236,7 @@ def DATA(datasocket,info):
     datasocket.send((respond_msg+"\r\n").encode())
     return text
 
-def write_file(path, sender, receivers, body):
+def write_file(path, sender, receivers, body,auth_pass):
     '''
     write the email to given path
     '''
@@ -248,6 +248,8 @@ def write_file(path, sender, receivers, body):
         filename = str(int(datetime.datetime.timestamp(date_format)))+".txt"
     except Exception:
         filename = "unknown.txt"
+    if auth_pass:
+        filename = "auth."+filename
     try:
         f = open(path+"/"+filename,"w")
         f.write("From: "+sender.replace("\r\n","\n"))
@@ -317,7 +319,7 @@ def main():
                             stage = 1
                     elif info[0:4]=="DATA":
                         text = DATA(conn,info)
-                        write_file(path,MAIL_from,RCPT_to,text)
+                        write_file(path, MAIL_from, RCPT_to, text, auth_pass)
                     elif info[0:4]=="NOOP":
                         NOOP(conn,info)
         conn.close()
