@@ -65,7 +65,7 @@ def check_ip_addr(ip):
     for num in ip:
         if not num.isnumeric():
             return False
-        if int(num) > 127 or int(num) < 0:
+        if int(num) > 255 or int(num) < 0:
             return False
     return True
 
