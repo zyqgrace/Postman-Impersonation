@@ -198,7 +198,7 @@ def DATA(datasocket,info):
     '''
     return text as a list of all content from Date
     '''
-    send_code(354)
+    send_code(datasocket,354)
     text = []
     while True:
         recved = datasocket.recv(1024)
