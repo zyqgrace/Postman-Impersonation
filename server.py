@@ -171,7 +171,8 @@ def AUTH(datasocket):
     base64_answer = base64.b64decode(anwser)
     client_digest = base64_answer.decode().split(" ")[1]
     server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
-    if hmac.compare_digest(server_hmac.hexdigest(),client_digest):
+    server_answer = PERSONAL_ID+" "+server_hmac.hexdigest()
+    if server_answer == client_digest.strip("\r\n"):
         send_code(datasocket,235)
         return True
     else:
