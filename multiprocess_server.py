@@ -36,33 +36,43 @@ def parse_conf_path():
     send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
 
-def EHLO(data_socket,message,prefix):
+def send_code(datasocket,num):
+    code = {
+        220:"220 Service ready",
+        250:"250 Requested mail action okay completed",
+        221:"221 Service closing transmission channel",
+        501:"501 Syntax error in parameters or arguments",
+        503:"503 Bad sequence of commands",
+        235:"235 Authentication successful",
+        504: "504 Unrecognized authentication type",
+        535: "535 Authentication credentials invalid",
+        354:"354 Start mail input end <CRLF>.<CRLF>"
+    }
+    print("S: "+code[num],end="\r\n",flush=True)
+    datasocket.send((code[num]+"\r\n").encode())
+    return "S: "+code[num]
+
+def EHLO(data_socket):
     '''
     message - entire recved from client
     example EHLO 127.0.0.1
     interpret the message whether it is valid and respond the EHLO command.
     '''
-    command = message.split(" ")
     return_msg = []
-    if (len(command)==1):
-        respond_message = "501 Syntax error in parameters or arguments"
-        data_socket.send((respond_message+"\r\n").encode())
-        return_msg.append(prefix+"S: "+respond_msg)
-    else:
-        respond_msg = "250 127.0.0.1"
-        #authenticity check
-        auth_msg = "250 AUTH CRAM-MD5"
-        data_socket.send((respond_msg+"\r\n"+auth_msg+"\r\n").encode())
-        return_msg.append(prefix+"S: "+respond_msg)
-        return_msg.append(prefix+"S: "+auth_msg)
+    respond_msg = "250 127.0.0.1"
+    #authenticity check
+    auth_msg = "250 AUTH CRAM-MD5"
+    data_socket.send((respond_msg+"\r\n"+auth_msg+"\r\n").encode())
+    return_msg.append("S: "+respond_msg)
+    return_msg.append("S: "+auth_msg)
     return return_msg
 
-def QUIT(data_socket,prefix):
+def QUIT(data_socket):
     send_msg = "221 Service closing transmission channel"
     data_socket.send((send_msg+"\r\n").encode())
-    return [prefix+"S: "+send_msg]
+    return ["S: "+send_msg]
 
-def check_stage(datasocket, info,stage,prefix):
+def check_stage(datasocket, info,stage):
     sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["RCPT","DATA"]]
     return_msg = []
     for s in sequence[stage]:
@@ -70,9 +80,7 @@ def check_stage(datasocket, info,stage,prefix):
             return True,return_msg
     if info == "QUIT" or info =="RSET" or info == "NOOP":
         return True,return_msg
-    respond_msg = "503 Bad sequence of commands"
-    return_msg.append(prefix+"S: "+respond_msg)
-    datasocket.send((respond_msg+"\r\n").encode())
+    return_msg = send_code(datasocket,503)
     return False,return_msg
 
 def isletdig(char):
@@ -124,7 +132,7 @@ def check_email_format(info):
         return False
     return True
 
-def check_syntax(datasocket, info,prefix):
+def check_syntax(datasocket, info):
     '''
     param info - the entire message String from the client
     for the purpose of checking whether syntex is correct
@@ -160,7 +168,7 @@ def check_syntax(datasocket, info,prefix):
     elif info_ls[0] == "AUTH":
         if info_ls[1] != "CRAM-MD5\r\n":
             error_msg = "504 Unrecognized authentication type"
-            return_msg.append(prefix+"S: "+error_msg)
+            return_msg.append("S: "+error_msg)
             datasocket.send((error_msg+"\r\n").encode())
             return False
     elif info_ls[0][0:4]=="RSET":
@@ -170,11 +178,11 @@ def check_syntax(datasocket, info,prefix):
         if len(info_ls)!=1:
             syntax_correct = False
     if not syntax_correct:
-        return_msg.append(prefix+"S: "+error_msg)
+        return_msg.append("S: "+error_msg)
         datasocket.send((error_msg+"\r\n").encode())
     return syntax_correct,return_msg
 
-def AUTH(datasocket,info,prefix):
+def AUTH(datasocket,info):
     return_msg = []
     alphabet = string.ascii_letters + string.digits
     password = ''.join(secrets.choice(alphabet) for i in range(50))
@@ -189,43 +197,43 @@ def AUTH(datasocket,info,prefix):
         result = "235 Authentication successful"
     else:
         result = "535 Authentication credentials invalid"
-    return_msg.append(prefix+"S: "+result)
+    return_msg.append("S: "+result)
     datasocket.send((result+"\r\n").encode())
     return False,return_msg
 
-def MAIL(datasocket,info,prefix):
+def MAIL(datasocket,info):
     return_msg = []
     respond_msg = "250 Requested mail action okay completed"
-    return_msg.append(prefix+"S: "+respond_msg)
+    return_msg.append("S: "+respond_msg)
     datasocket.send((respond_msg+"\r\n").encode())
     return return_msg
 
-def RCPT(datasocket,info,prefix):
+def RCPT(datasocket,info):
     return_msg = []
     respond_msg = "250 Requested mail action okay completed"
-    return_msg.append(prefix+"S: "+respond_msg)
+    return_msg.append("S: "+respond_msg)
     datasocket.send((respond_msg+"\r\n").encode())
     return return_msg
 
-def RSET(datasocket,info,prefix):
+def RSET(datasocket,info):
     return_msg = []
     respond_msg = "250 Requested mail action okay completed"
-    return_msg.append(prefix+"S: "+respond_msg)
+    return_msg.append("S: "+respond_msg)
     datasocket.send((respond_msg+"\r\n").encode())
     return return_msg
 
-def NOOP(datasocket,info,prefix):
+def NOOP(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
     datasocket.send((respond_msg+"\r\n").encode())
-    return [prefix+"S: "+respond_msg]
+    return ["S: "+respond_msg]
 
-def DATA(datasocket,info,prefix):
+def DATA(datasocket,info):
     '''
     return text as a list of all content from Date
     '''
     return_msg = []
     respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
-    return_msg.append(prefix+"S: "+respond_msg)
+    return_msg.append("S: "+respond_msg)
     datasocket.send((respond_msg+"\r\n").encode())
     text = []
     while True:
@@ -233,21 +241,21 @@ def DATA(datasocket,info,prefix):
         info = recved.decode()
         if not recved:
             err_msg = "Connection lost"
-            return_msg.append(prefix+"S: "+err_msg)
+            return_msg.append("S: "+err_msg)
             break
-        return_msg.append(prefix+"C: "+info.strip("\r\n"))
+        return_msg.append("C: "+info.strip("\r\n"))
         if info == ".\r\n":
             break
         text.append(info)
         respond_msg = "354 Start mail input end <CRLF>.<CRLF>"
-        return_msg.append(prefix+"S: "+respond_msg)
+        return_msg.append("S: "+respond_msg)
         datasocket.send((respond_msg+"\r\n").encode())
     respond_msg = "250 Requested mail action okay completed"
-    return_msg.append(prefix+"S: "+respond_msg)
+    return_msg.append("S: "+respond_msg)
     datasocket.send((respond_msg+"\r\n").encode())
     return text,return_msg
 
-def read_file(path, sender, receivers, body,prefix):
+def write_file(path, sender, receivers, body,prefix):
     '''
     read file to given path
     '''
@@ -294,7 +302,7 @@ def main():
                 stage = 0
                 conn.send((send_msg+"\r\n").encode())
                 stdout = []
-                stdout.append(prefix+"S: "+send_msg)
+                stdout.append("S: "+send_msg)
                 MAIL_from = None
                 RCPT_to = []
                 text = ''
@@ -304,46 +312,46 @@ def main():
                     info = recved.decode()
                     if not recved:
                         err_msg = "Connection lost"
-                        stdout.append(prefix+"S: "+err_msg)
+                        stdout.append("S: "+err_msg)
                         break
-                    stdout.append(prefix+"C: "+info.strip("\r\n"))
-                    stage_correct,text = check_stage(conn,info[0:4],stage,prefix)
+                    stdout.append("C: "+info.strip("\r\n"))
+                    stage_correct,text = check_stage(conn,info[0:4],stage)
                     stdout+=text
                     if stage_correct:
-                        syntax_correct, text = check_syntax(conn, info,prefix)
+                        syntax_correct, text = check_syntax(conn, info)
                         stdout+=text
                         if syntax_correct:
                             if info[0:4]=="EHLO":
-                                stdout+=EHLO(conn,info,prefix)
+                                stdout+=EHLO(conn)
                                 stage = 1
                             elif info[0:4]=="AUTH":
-                                next, text = AUTH(conn,info,prefix)
+                                next, text = AUTH(conn,info)
                                 stdout+=text
                                 if next:
                                     stage = 2
                             elif info[0:4]=="MAIL":
                                 MAIL_from = info.split(" ")[1][5:]
-                                stdout += MAIL(conn,info,prefix)
+                                stdout += MAIL(conn,info)
                                 stage = 2
                             elif info[0:4]=="RCPT":
                                 RCPT_to.append(info[8:-2])
-                                stdout += RCPT(conn,info,prefix)
+                                stdout += RCPT(conn,info)
                                 stage = 3
                             elif info[0:4]=="QUIT":
-                                stdout+=QUIT(conn,prefix)
+                                stdout+=QUIT(conn)
                                 break
                             elif info[0:4]=="RSET":
-                                stdout+=RSET(conn,info,prefix)
+                                stdout+=RSET(conn,info)
                                 if stage != 0:
                                     stage = 1
                             elif info[0:4]=="DATA":
-                                text,return_msg= DATA(conn,info,prefix)
+                                text,return_msg= DATA(conn,info)
                                 stdout+=return_msg
-                                read_file(path,MAIL_from,RCPT_to,text,prefix)
+                                write_file(path,MAIL_from,RCPT_to,text,prefix)
                             elif info[0:4]=="NOOP":
                                 stdout+=NOOP(conn,info)
                 for output in stdout:
-                    print(output,end="\r\n",flush=True)
+                    print(prefix+output,end="\r\n",flush=True)
                 os._exit(os.EX_OK)
         conn.close()
         s.close()
