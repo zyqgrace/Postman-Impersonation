@@ -1,0 +1,2 @@
+test.sh: line 14: coverage: command not found
+test.sh: line 14: coverage: command not found
