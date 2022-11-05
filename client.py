@@ -1,3 +1,5 @@
+import base64
+import hmac
 import os
 import socket
 import sys
@@ -59,7 +61,7 @@ def list_directory(send_path):
 def read_text(filepath):
     """
     This aims to read the text from absolute filepath parse
-    and return send status and information as an Email instance
+    and return information as an Email instance
     """
     f = open(filepath,"r")
     texts = f.readlines()
@@ -143,8 +145,23 @@ def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     else:
         return True
 
-def AUTH():
-    pass
+def AUTH(client_socket):
+    respond = "AUTH CRAM-MD5"
+    print("C: "+respond,end="\r\n",flush=True)
+    client_socket.send((respond+"\r\n").encode())
+    recv = client_socket.recv(256)
+    challenge_byte = recv[4:-2]
+    base64_challenge = base64.b64decode(challenge_byte)
+    client_hmac = hmac.new(PERSONAL_SECRET.encode(),
+                            base64_challenge,digestmod="md5")
+    result = PERSONAL_ID +" "+ client_hmac.hexdigest()
+    sample_string_bytes = result.encode("ascii")
+    base64_bytes = base64.b64encode(sample_string_bytes)
+    send_msg = base64_bytes + b'\r\n'
+    client_socket.send(send_msg)
+    if check_status_code(client_socket, 235):
+        return True
+    return False
 
 def main():
     # TODO
@@ -161,6 +178,8 @@ def main():
             sys.exit(3)
         if check_status_code(dataSocket, 220):
             EHLO(dataSocket)
+        if "auth" in filepath.lower():
+            AUTH(dataSocket)
         send_email_via_server(dataSocket,email)
     sys.exit(0)
 
