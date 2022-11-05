@@ -27,11 +27,9 @@ def parse_conf_path():
                 send_path = info[11:]
     except FileNotFoundError:
         sys.exit(1)
-    if server_port.isnumeric() == False:
+    if server_port == None or send_path == None:
         sys.exit(2)
     elif int(server_port) <= 1024:
-        sys.exit(2)
-    elif send_path == None:
         sys.exit(2)
     send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
@@ -182,11 +180,14 @@ def AUTH(datasocket,info):
     server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
     if hmac.compare_digest(server_hmac.hexdigest(),client_digest):
         result = "235 Authentication successful"
+        print("S: "+result,end="\r\n",flush=True)
+        datasocket.send((result+"\r\n").encode())
+        return True
     else:
         result = "535 Authentication credentials invalid"
-    print("S: "+result,end="\r\n",flush=True)
-    datasocket.send((result+"\r\n").encode())
-    return False
+        print("S: "+result,end="\r\n",flush=True)
+        datasocket.send((result+"\r\n").encode())
+        return False
 
 def MAIL(datasocket,info):
     respond_msg = "250 Requested mail action okay completed"
@@ -235,17 +236,20 @@ def DATA(datasocket,info):
     datasocket.send((respond_msg+"\r\n").encode())
     return text
 
-def read_file(path, sender, receivers, body):
+def write_file(path, sender, receivers, body):
     '''
-    read file to given path
+    write the email to given path
     '''
     filename = None
     cur_time = body[0].strip("\r\n")
-    date_format = datetime.datetime.strptime(cur_time, 
-                  'Date: %a, %d %b %Y %H:%M:%S %z')
-    filename = str(int(datetime.datetime.timestamp(date_format)))+".txt"
     try:
-        f = open(path+"/"+filename,"a")
+        date_format = datetime.datetime.strptime(cur_time, 
+                    'Date: %a, %d %b %Y %H:%M:%S %z')
+        filename = str(int(datetime.datetime.timestamp(date_format)))+".txt"
+    except Exception:
+        filename = "unknown.txt"
+    try:
+        f = open(path+"/"+filename,"w")
         f.write("From: "+sender.replace("\r\n","\n"))
         receiver_str = ""
         for i in range(len(receivers)-1):
@@ -256,8 +260,8 @@ def read_file(path, sender, receivers, body):
             text = text.replace("\r\n","\n")
             f.write(text)
         f.close()
-    except Exception:
-        pass
+    except IOError:
+        sys.exit(2)
 
 def main():
     # TODO
@@ -266,23 +270,25 @@ def main():
     PORT, path = parse_conf_path()
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((IP,PORT))
-        s.listen()
+        try:
+            s.bind((IP,PORT))
+            s.listen()
+        except socket.error:
+            sys.exit(2)
         conn, addr = s.accept()
         send_msg = "220 Service ready"
         print("S: "+send_msg,end="\r\n",flush=True)
         stage = 0
         conn.send((send_msg+"\r\n").encode())
         MAIL_from = None
+        auth_pass = False
         RCPT_to = []
         text = ''
-        filename = None
         while True:
             recved = conn.recv(BUFLEN)
             info = recved.decode()
             if not recved:
-                err_msg = "Connection lost"
-                print("S: "+err_msg,end="\r\n",flush=True)
+                print("S: Connection lost",end="\r\n",flush=True)
                 break
             print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
             if check_stage(conn,info[0:4],stage):
@@ -293,6 +299,7 @@ def main():
                     elif info[0:4]=="AUTH":
                         if AUTH(conn,info):
                             stage = 2
+                            auth_pass = True
                     elif info[0:4]=="MAIL":
                         MAIL_from = info.split(" ")[1][5:]
                         MAIL(conn,info)
@@ -310,7 +317,7 @@ def main():
                             stage = 1
                     elif info[0:4]=="DATA":
                         text = DATA(conn,info)
-                        read_file(path,MAIL_from,RCPT_to,text)
+                        write_file(path,MAIL_from,RCPT_to,text)
                     elif info[0:4]=="NOOP":
                         NOOP(conn,info)
         conn.close()
