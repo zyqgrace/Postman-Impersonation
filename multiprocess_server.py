@@ -276,7 +276,6 @@ def main():
     BUFLEN = 1024
     IP = 'localhost'
     PORT, path = parse_conf_path()
-    parent_pid = os.getpid()
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((IP,PORT))
@@ -290,7 +289,7 @@ def main():
                 break
             pid = os.fork()
             if pid == 0:
-                prefix = f'[{parent_pid}][{number:02d}]'
+                prefix = f'[{os.getpid()}][{number:02d}]'
                 send_msg = "220 Service ready"
                 stage = 0
                 conn.send((send_msg+"\r\n").encode())
