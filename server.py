@@ -167,14 +167,11 @@ def AUTH(datasocket):
     challenge = base64.b64encode(password.encode())
     send_msg = b"334 "+challenge+b"\r\n"
     datasocket.send(send_msg)
-    answer = datasocket.recv(256)
-    print(answer,type(answer))
-    #base64_answer = base64.b64decode((anwser.strip("\r\n")).encode())
-    server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode("ascii"),digestmod="md5")
-    server_answer = PERSONAL_ID+" "+server_hmac.hexdigest()
-    server_answer = base64.b64encode(server_answer.encode('ascii'))
-    print(server_answer,type(server_answer))
-    if server_answer == answer:
+    anwser = datasocket.recv(256)
+    base64_answer = base64.b64decode(anwser)
+    client_digest = base64_answer.decode().split(" ")[1]
+    server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
+    if hmac.compare_digest(server_hmac.hexdigest(),client_digest):
         send_code(datasocket,235)
         return True
     else:
