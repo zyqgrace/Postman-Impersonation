@@ -1,4 +1,5 @@
 import os
+import signal
 import socket
 import sys
 import base64
@@ -168,9 +169,13 @@ def AUTH(datasocket):
     send_msg = b"334 "+challenge+b"\r\n"
     datasocket.send(send_msg)
     anwser = datasocket.recv(256)
-    base64_answer = base64.b64decode(anwser)
-    client_digest = base64_answer.decode().split(" ")[1]
-    server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
+    try:
+        base64_answer = base64.b64decode(anwser)
+        client_digest = base64_answer.decode().split(" ")[1]
+        server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
+    except Exception:
+        send_code(datasocket,535)
+        return False
     if hmac.compare_digest(server_hmac.hexdigest(),client_digest):
         send_code(datasocket,235)
         return True
@@ -180,15 +185,16 @@ def AUTH(datasocket):
 
 def send_code(datasocket,num):
     code = {
-        220:"220 Service ready",
-        250:"250 Requested mail action okay completed",
-        221:"221 Service closing transmission channel",
-        501:"501 Syntax error in parameters or arguments",
-        503:"503 Bad sequence of commands",
-        235:"235 Authentication successful",
+        220: "220 Service ready",
+        250: "250 Requested mail action okay completed",
+        221: "221 Service closing transmission channel",
+        501: "501 Syntax error in parameters or arguments",
+        503: "503 Bad sequence of commands",
+        235: "235 Authentication successful",
         504: "504 Unrecognized authentication type",
         535: "535 Authentication credentials invalid",
-        354:"354 Start mail input end <CRLF>.<CRLF>"
+        354: "354 Start mail input end <CRLF>.<CRLF>",
+        421: "421 Service not available, closing transmission channel"
     }
     print("S: "+code[num],end="\r\n",flush=True)
     datasocket.send((code[num]+"\r\n").encode())
@@ -243,6 +249,10 @@ def write_file(path, sender, receivers, body,auth_pass):
     except IOError:
         sys.exit(2)
 
+def handler(SIGINT,SignalHandler_SIGINT):
+    send_code(conn,421)
+    sys.exit(0)
+
 def main():
     BUFLEN = 1024
     IP = 'localhost'
@@ -254,6 +264,7 @@ def main():
             s.listen()
         except socket.error:
             sys.exit(2)
+        global conn
         conn, addr = s.accept()
         send_code(conn,220)
         stage = 0
@@ -299,6 +310,8 @@ def main():
                         send_code(conn,250)
         conn.close()
         s.close()
+
+signal.signal(signal.SIGINT,handler)
 
 if __name__ == '__main__':
     main()
