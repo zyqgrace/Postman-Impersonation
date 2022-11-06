@@ -1,0 +1,18 @@
+S: 220 Service ready
+C: DATA
+S: 503 Bad sequence of commands
+C: MAIL FROM:<kiki@gmail.com>
+S: 503 Bad sequence of commands
+C: EHLO 127.0.0.1
+S: 250 127.0.0.1
+S: 250 AUTH CRAM-MD5
+C: MAIL FROM:<sas@jsk.com>
+S: 250 Requested mail action okay completed
+C: RSET
+S: 250 Requested mail action okay completed
+C: RCPT TO:<ks@kas.as>
+S: 503 Bad sequence of commands
+C: NOOP
+S: 250 Requested mail action okay completed
+C: QUIT
+S: 221 Service closing transmission channel

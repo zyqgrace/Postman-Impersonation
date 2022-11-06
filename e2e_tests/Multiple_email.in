@@ -1,6 +1,4 @@
 EHLO 127.0.0.1
-AUTH CRAM-MD5
-*
 MAIL FROM:<jaksj@as.ds>
 RCPT TO:
 RCPT TO:<sakajs@jksad.jdk>
@@ -13,8 +11,6 @@ dasdasdasd
 .
 QUIT
 EHLO 127.0.0.1
-AUTH CRAM-MD5
-*
 MAIL FROM:
 MAIL FROM:<js-j@asa-s.ass>
 DATA

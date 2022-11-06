@@ -1,0 +1,8 @@
+DATA
+MAIL FROM:<kiki@gmail.com>
+EHLO 127.0.0.1
+MAIL FROM:<sas@ajsk.com>
+RSET
+RCPT TO:<ks@kas.as>
+NOOP
+QUIT

@@ -1,0 +1,16 @@
+EHLO 1
+EHLO 127.12.12.12
+MAIL
+MAIL From:
+MAIL FROM:
+MAIL FROM: <>
+MAIL FROM: <asasa>
+MAIL FROM:<ajskajks@->
+MAIL FROM:<@sajshj>
+MAIL FROM:<here.correct@gmail.com>
+RCPT TO:<yes-correct@haha.com>
+DATA
+sdjasid
+sadsadasds
+.
+QUIT

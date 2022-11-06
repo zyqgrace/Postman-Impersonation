@@ -1,36 +1,34 @@
 S: 220 Service ready
-C: EHLO
+C: EHLO 1
 S: 501 Syntax error in parameters or arguments
-C: EHLO 127.0.0.1
+C: EHLO 127.12.12.12
 S: 250 127.0.0.1
 S: 250 AUTH CRAM-MD5
-C: NOOP yeh
-S: 501 Syntax error in parameters or arguments
-C: RSET haha
-S: 501 Syntax error in parameters or arguments
-C: AUTH
-S: 501 Syntax error in parameters or arguments
 C: MAIL
 S: 501 Syntax error in parameters or arguments
-C: MAIL FROM:<grace@gmail.com>
-S: 250 Requested mail action okay completed
-C: RCPT
+C: MAIL From:
 S: 501 Syntax error in parameters or arguments
-C: RCPT RCPT
+C: MAIL FROM:
 S: 501 Syntax error in parameters or arguments
-C: RCPT TO:<gaga@jksad.com>
+C: MAIL FROM: <>
+S: 501 Syntax error in parameters or arguments
+C: MAIL FROM: <asasa>
+S: 501 Syntax error in parameters or arguments
+C: MAIL FROM:<ajskajks@->
+S: 501 Syntax error in parameters or arguments
+C: MAIL FROM:<@sajshj>
+S: 501 Syntax error in parameters or arguments
+C: MAIL FROM:<here.correct@gmail.com>
 S: 250 Requested mail action okay completed
-C: DATA /
-S: 354 Start mail input end <CRLF>.<CRLF>
+C: RCPT TO:<yes-correct@haha.com>
+S: 250 Requested mail action okay completed
 C: DATA
 S: 354 Start mail input end <CRLF>.<CRLF>
-C: sdhiosad
+C: sdjasid
 S: 354 Start mail input end <CRLF>.<CRLF>
-C: sadsadasd
-S: 354 Start mail input end <CRLF>.<CRLF>
-C: sadsadasd
+C: sadsadasds
 S: 354 Start mail input end <CRLF>.<CRLF>
 C: .
 S: 250 Requested mail action okay completed
 C: QUIT
-S: 250 Requested mail action okay completed
+S: 221 Service closing transmission channel
