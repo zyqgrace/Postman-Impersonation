@@ -1,0 +1,24 @@
+EHLO 127.0.0.1
+*
+MAIL FROM:<asas@kasas.as>
+RCPT TO:<asjaks@jask.asas>
+DATA
+Date: Mon, 14 Sep 1987 23:07:00 +1000
+Subject: There is the Subject
+sadsadasdsadsd
+lorem.\
+.
+QUIT
+EHLO 127.0.0.1
+*
+MAIL FROM:<asabj@sdjask.sda>
+RCPT TO:<ahsj@jask.dk>
+Date: Mon, 14 Sep 1987 23:07:00 +1000
+Subject: Therejhwk
+sjdhjsdhksajhd
+sdsdirnv
+.
+QUIT
+
+
+

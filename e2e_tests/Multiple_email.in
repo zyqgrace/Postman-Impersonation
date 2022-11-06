@@ -1,0 +1,29 @@
+EHLO 127.0.0.1
+AUTH CRAM-MD5
+*
+MAIL FROM:<jaksj@as.ds>
+RCPT TO:
+RCPT TO:<sakajs@jksad.jdk>
+DATA
+Date: Mon, 14 Sep 1987 23:07:00 +1000
+Subject: valid subject
+sdkashdas
+sadsadasd
+dasdasdasd
+.
+QUIT
+EHLO 127.0.0.1
+AUTH CRAM-MD5
+*
+MAIL FROM:
+MAIL FROM:<js-j@asa-s.ass>
+DATA
+RCPT TO:<sakajs@jks-ad.jdk>
+DATA
+Date: Mon, 14 Sep 1987 23:07:00 +1000
+Subject: valid subject
+sdkashdas
+sadsadasd
+dasdasdasd
+.
+QUIT

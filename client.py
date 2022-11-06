@@ -119,11 +119,6 @@ def send_email_via_server(client_socket, email):
                     pass
             print("C: .",end="\r\n",flush=True)
             client_socket.send(b".\r\n")
-        if check_status_code(client_socket, 250):
-            print("C: QUIT",end="\r\n",flush=True)
-            client_socket.send(b"QUIT\r\n")
-        if check_status_code(client_socket, 221):
-            client_socket.close()
 
 def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
@@ -157,6 +152,7 @@ def AUTH(client_socket):
     print("C: "+respond,end="\r\n",flush=True)
     client_socket.send((respond+"\r\n").encode())
     recv = client_socket.recv(256)
+    print("S: "+recv.decode().strip("\r\n"),end="\r\n",flush=True)
     challenge_byte = recv[4:-2]
     base64_challenge = base64.b64decode(challenge_byte)
     client_hmac = hmac.new(PERSONAL_SECRET.encode(),
@@ -164,6 +160,7 @@ def AUTH(client_socket):
     result = PERSONAL_ID +" "+ client_hmac.hexdigest()
     sample_string_bytes = result.encode("ascii")
     base64_bytes = base64.b64encode(sample_string_bytes)
+    print("C: "+base64_bytes.decode(),end="\r\n",flush=True)
     send_msg = base64_bytes + b'\r\n'
     client_socket.send(send_msg)
     if check_status_code(client_socket, 235):
@@ -188,6 +185,11 @@ def main():
         if "auth" in filepath.lower():
             AUTH(dataSocket)
         send_email_via_server(dataSocket,email)
+        if check_status_code(dataSocket, 250):
+            print("C: QUIT",end="\r\n",flush=True)
+            dataSocket.send(b"QUIT\r\n")
+        if check_status_code(dataSocket, 221):
+            dataSocket.close()
     sys.exit(0)
 
 if __name__ == '__main__':

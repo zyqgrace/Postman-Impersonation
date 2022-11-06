@@ -228,6 +228,7 @@ def write_file(path, sender, receivers, body,auth_pass):
     '''
     filename = None
     cur_time = body[0].strip("\r\n")
+    email_finish = False
     try:
         date_format = datetime.datetime.strptime(cur_time, 
                     'Date: %a, %d %b %Y %H:%M:%S %z')
@@ -264,53 +265,58 @@ def main():
         try:
             s.bind((IP,PORT))
             s.listen()
+            s.settimeout(20)
         except socket.error:
             sys.exit(2)
-        global conn
-        conn, addr = s.accept()
-        send_code(conn,220)
-        stage = 0
-        MAIL_from = None
-        auth_pass = False
-        RCPT_to = []
-        text = ''
         while True:
-            recved = conn.recv(BUFLEN)
-            info = recved.decode()
-            if not recved:
-                print("S: Connection lost",end="\r\n",flush=True)
+            try:
+                global conn
+                conn, addr = s.accept()
+            except socket.error:
                 break
-            print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
-            if check_stage(conn,info[0:4],stage):
-                if check_syntax(conn, info):
-                    if info[0:4]=="EHLO":
-                        EHLO(conn)
-                        stage = 1
-                    elif info[0:4]=="AUTH":
-                        if AUTH(conn):
-                            stage = 2
-                            auth_pass = True
-                    elif info[0:4]=="MAIL":
-                        MAIL_from = info.split(" ")[1][5:]
-                        send_code(conn,250)
-                        stage = 2
-                    elif info[0:4]=="RCPT":
-                        RCPT_to.append(info[8:-2])
-                        send_code(conn,250)
-                        stage = 3
-                    elif info[0:4]=="QUIT":
-                        send_code(conn,221)
-                        break
-                    elif info[0:4]=="RSET":
-                        send_code(conn,250)
-                        if stage != 0:
+            send_code(conn,220)
+            stage = 0
+            MAIL_from = None
+            auth_pass = False
+            RCPT_to = []
+            text = ''
+            while True:
+                recved = conn.recv(BUFLEN)
+                info = recved.decode()
+                if not recved:
+                    print("S: Connection lost",end="\r\n",flush=True)
+                    break
+                print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
+                if check_stage(conn,info[0:4],stage):
+                    if check_syntax(conn, info):
+                        if info[0:4]=="EHLO":
+                            EHLO(conn)
                             stage = 1
-                    elif info[0:4]=="DATA":
-                        text = DATA(conn,info)
-                        write_file(path, MAIL_from, RCPT_to, text, auth_pass)
-                    elif info[0:4]=="NOOP":
-                        send_code(conn,250)
-        conn.close()
+                        elif info[0:4]=="AUTH":
+                            if AUTH(conn):
+                                stage = 2
+                                auth_pass = True
+                        elif info[0:4]=="MAIL":
+                            MAIL_from = info.split(" ")[1][5:]
+                            send_code(conn,250)
+                            stage = 2
+                        elif info[0:4]=="RCPT":
+                            RCPT_to.append(info[8:-2])
+                            send_code(conn,250)
+                            stage = 3
+                        elif info[0:4]=="QUIT":
+                            send_code(conn,221)
+                            break
+                        elif info[0:4]=="RSET":
+                            send_code(conn,250)
+                            if stage != 0:
+                                stage = 1
+                        elif info[0:4]=="DATA":
+                            text = DATA(conn,info)
+                            write_file(path, MAIL_from, RCPT_to, text, auth_pass)
+                        elif info[0:4]=="NOOP":
+                            send_code(conn,250)
+            conn.close()
         s.close()
 
 signal.signal(signal.SIGINT,handler)
