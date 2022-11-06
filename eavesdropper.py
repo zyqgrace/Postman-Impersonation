@@ -89,13 +89,14 @@ def main():
         for i in info[:-1]:
             print("AC: "+i,end="\r\n",flush=True)
         conn.send(recved)
-        if quit and info[0:3]=="221":
+        if quit and info[0][0:3]=="221":
             sys.exit(0)
 
         recved = conn.recv(1024)
         info = recved.decode()
         if not recved:
             print("AC: Connection lost",end="\r\n",flush=True)
+            break
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
         if info == ".\r\n":
@@ -112,5 +113,7 @@ def main():
         AS.send(recved)
         if info[0:4]=="QUIT":
             quit = True
+    AC.close()
+    conn.close()
 if __name__ == '__main__':
     main()
