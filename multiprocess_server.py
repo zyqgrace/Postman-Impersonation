@@ -34,6 +34,31 @@ def parse_conf_path():
     send_path = os.path.expanduser(send_path)
     return int(server_port),send_path
 
+def recognize_command(info):
+    valid = ["EHLO","MAIL","RCPT","DATA","RSET",
+            "NOOP","AUTH","QUIT"]
+    return info[0:4] in valid
+
+def check_stage(info,stage):
+    sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["RCPT","DATA"]]
+    for s in sequence[stage]:
+        if info == s:
+            return True
+    if info == "QUIT" or info =="RSET" or info == "NOOP":
+        return True
+    return False
+
+def check_ip_addr(ip):
+    ip = ip.split(".")
+    if len(ip) != 4:
+        return False
+    for num in ip:
+        if not num.isnumeric():
+            return False
+        if int(num) > 255 or int(num) < 0:
+            return False
+    return True
+
 def send_code(datasocket,num):
     '''
     return list of send code
@@ -43,6 +68,7 @@ def send_code(datasocket,num):
         250:"250 Requested mail action okay completed",
         221:"221 Service closing transmission channel",
         501:"501 Syntax error in parameters or arguments",
+        500: "500 Syntax error,command unrecognized",
         503:"503 Bad sequence of commands",
         235:"235 Authentication successful",
         504: "504 Unrecognized authentication type",
@@ -66,17 +92,6 @@ def EHLO(data_socket):
     return_msg.append("S: "+respond_msg)
     return_msg.append("S: "+auth_msg)
     return return_msg
-
-def check_stage(datasocket, info,stage):
-    sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["RCPT","DATA"]]
-    return_msg = []
-    for s in sequence[stage]:
-        if info == s:
-            return True,return_msg
-    if info == "QUIT" or info =="RSET" or info == "NOOP":
-        return True,return_msg
-    return_msg = send_code(datasocket,503)
-    return False,return_msg
 
 def isletdig(char):
     return char.isalpha() or char.isnumeric()
@@ -141,12 +156,8 @@ def check_syntax(datasocket, info):
         if len(info_ls) != 2:
             syntax_correct = False
         else:
-            port_number = info_ls[1].split(".")
-            if len(port_number) != 4:
+            if check_ip_addr(info_ls[1][:-2]) == False:
                 syntax_correct = False
-            for num in port_number:
-                if int(num) < 0 or int(num)>255:
-                    syntax_correct = False
     elif info_ls[0][0:4]=="QUIT":
         if info_ls[0] != "QUIT\r\n":
             syntax_correct = False
@@ -175,7 +186,7 @@ def check_syntax(datasocket, info):
         datasocket.send((error_msg+"\r\n").encode())
     return syntax_correct,return_msg
 
-def AUTH(datasocket,info):
+def AUTH(datasocket):
     return_msg = []
     alphabet = string.ascii_letters + string.digits
     password = ''.join(secrets.choice(alphabet) for i in range(50))
@@ -276,41 +287,44 @@ def main():
                         stdout.append("S: "+err_msg)
                         break
                     stdout.append("C: "+info.strip("\r\n"))
-                    stage_correct,text = check_stage(conn,info[0:4],stage)
+                    if recognize_command(info)==False:
+                        stdout+=send_code(conn,500)
+                        continue
+                    if check_stage(info[0:4],stage) == False:
+                        stdout+=send_code(conn,503)
+                        continue
+                    syntax_correct, text = check_syntax(conn, info)
                     stdout+=text
-                    if stage_correct:
-                        syntax_correct, text = check_syntax(conn, info)
-                        stdout+=text
-                        if syntax_correct:
-                            if info[0:4]=="EHLO":
-                                stdout+=EHLO(conn)
-                                stage = 1
-                            elif info[0:4]=="AUTH":
-                                next, text = AUTH(conn,info)
-                                stdout+=text
-                                if next:
-                                    stage = 2
-                            elif info[0:4]=="MAIL":
-                                MAIL_from = info.split(" ")[1][5:]
-                                stdout+=send_code(conn,250)
+                    if syntax_correct:
+                        if info[0:4]=="EHLO":
+                            stdout+=EHLO(conn)
+                            stage = 1
+                        elif info[0:4]=="AUTH":
+                            next, text = AUTH(conn)
+                            stdout+=text
+                            if next:
                                 stage = 2
-                            elif info[0:4]=="RCPT":
-                                RCPT_to.append(info[8:-2])
-                                stdout+=send_code(conn,250)
-                                stage = 3
-                            elif info[0:4]=="QUIT":
-                                stdout+=send_code(conn,221)
-                                break
-                            elif info[0:4]=="RSET":
-                                stdout+=send_code(conn,250)
-                                if stage != 0:
-                                    stage = 1
-                            elif info[0:4]=="DATA":
-                                text,return_msg= DATA(conn,info)
-                                stdout+=return_msg
-                                write_file(path,MAIL_from,RCPT_to,text,prefix)
-                            elif info[0:4]=="NOOP":
-                                stdout+=send_code(conn,250)
+                        elif info[0:4]=="MAIL":
+                            MAIL_from = info.split(" ")[1][5:]
+                            stdout+=send_code(conn,250)
+                            stage = 2
+                        elif info[0:4]=="RCPT":
+                            RCPT_to.append(info[8:-2])
+                            stdout+=send_code(conn,250)
+                            stage = 3
+                        elif info[0:4]=="QUIT":
+                            stdout+=send_code(conn,221)
+                            break
+                        elif info[0:4]=="RSET":
+                            stdout+=send_code(conn,250)
+                            if stage != 0:
+                                stage = 1
+                        elif info[0:4]=="DATA":
+                            text,return_msg= DATA(conn,info)
+                            stdout+=return_msg
+                            write_file(path,MAIL_from,RCPT_to,text,prefix)
+                        elif info[0:4]=="NOOP":
+                            stdout+=send_code(conn,250)
                 for output in stdout:
                     print(prefix+output,end="\r\n",flush=True)
                 os._exit(os.EX_OK)
