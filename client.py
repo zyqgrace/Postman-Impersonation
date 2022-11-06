@@ -119,6 +119,11 @@ def send_email_via_server(client_socket, email):
                     pass
             print("C: .",end="\r\n",flush=True)
             client_socket.send(b".\r\n")
+        if check_status_code(client_socket, 250):
+            print("C: QUIT",end="\r\n",flush=True)
+            client_socket.send(b"QUIT\r\n")
+        if check_status_code(client_socket, 221):
+            client_socket.close()
 
 def EHLO(client_sock: socket.socket) -> None:
     print("C: EHLO 127.0.0.1", end = "\r\n",flush=True)
@@ -185,11 +190,6 @@ def main():
         if "auth" in filepath.lower():
             AUTH(dataSocket)
         send_email_via_server(dataSocket,email)
-        if check_status_code(dataSocket, 250):
-            print("C: QUIT",end="\r\n",flush=True)
-            dataSocket.send(b"QUIT\r\n")
-        if check_status_code(dataSocket, 221):
-            dataSocket.close()
     sys.exit(0)
 
 if __name__ == '__main__':
