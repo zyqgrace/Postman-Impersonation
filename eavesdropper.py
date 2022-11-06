@@ -65,6 +65,7 @@ def main():
     RCPT_to = []
     text = []
     record=False
+    quit = False
     try:
         AS = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         AS.connect((IP,server_port))
@@ -88,6 +89,8 @@ def main():
         for i in info[:-1]:
             print("AC: "+i,end="\r\n",flush=True)
         conn.send(recved)
+        if quit and info[0:3]=="221":
+            sys.exit(0)
 
         recved = conn.recv(1024)
         info = recved.decode()
@@ -108,9 +111,6 @@ def main():
             record = True
         AS.send(recved)
         if info[0:4]=="QUIT":
-            break
-    AS.close()
-    conn.close()
-    AC.close()
+            quit = True
 if __name__ == '__main__':
     main()
