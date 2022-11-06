@@ -7,7 +7,7 @@ MAIL FROM:<bob@bob.org>
 RCPT TO:<alice@example.com>
 RCPT TO:<me@carol.me>
 DATA
-Date: Mon, 14 Sep 1987 23:07:00 +1000
+Date: Tue, 14 Nov 1997 21:07:00 +1000
 Subject: Frist Electronic Mail from Bob to Alice and Carol
 Across the Exosphere we can reach every corner on the Moon.
 .

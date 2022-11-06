@@ -50,10 +50,11 @@ def EHLO(data_socket):
 
 def check_stage(datasocket, info,stage):
     sequence = [["EHLO"],['AUTH',"MAIL"],["RCPT"],["RCPT","DATA"]]
+    no_need_sequence = ["EHLO","RSET","NOOP","QUIT"]
     for s in sequence[stage]:
         if info == s:
             return True
-    if info == "QUIT" or info =="RSET" or info == "NOOP":
+    if info in no_need_sequence:
         return True
     send_code(datasocket,503)
     return False
@@ -168,9 +169,12 @@ def AUTH(datasocket):
     challenge = base64.b64encode(password.encode())
     send_msg = b"334 "+challenge+b"\r\n"
     datasocket.send(send_msg)
-    anwser = datasocket.recv(256)
+    answer = datasocket.recv(256)
+    if (answer.decode() == "*\r\n"):
+        send_code(datasocket,501)
+        return False
     try:
-        base64_answer = base64.b64decode(anwser)
+        base64_answer = base64.b64decode(answer)
         client_digest = base64_answer.decode().split(" ")[1]
         server_hmac = hmac.new(PERSONAL_SECRET.encode(),password.encode(),digestmod="md5")
     except Exception:
@@ -209,8 +213,6 @@ def DATA(datasocket,info):
         recved = datasocket.recv(1024)
         info = recved.decode()
         if not recved:
-            err_msg = "Connection lost"
-            print("S: "+err_msg,end="\r\n",flush=True)
             break
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         if info == ".\r\n":

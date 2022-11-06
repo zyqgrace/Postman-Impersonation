@@ -1,0 +1,21 @@
+EHLO
+EHLO 127.0.0.1
+NOOP yeh
+RSET haha
+AUTH
+AUTH CRAM-MD5
+MAIL
+MAIL FROM:<grace@gmail.com>
+RCPT
+RCPT RCPT
+RCPT TO:<gaga@jksad.com>
+DATA /
+DATA
+sdhiosad
+sadsadasd
+sadsadasd
+.
+QUIT
+
+
+

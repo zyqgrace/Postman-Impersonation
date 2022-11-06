@@ -40,7 +40,10 @@ def parse_conf():
         sys.exit(2)
     elif int(server_port) <= 1024:
         sys.exit(2)
-    send_path = os.path.expanduser(send_path)
+    try:
+        send_path = os.path.expanduser(send_path)
+    except Exception:
+        sys.exit(2)
     return int(server_port),send_path
 
 def list_directory(send_path):
@@ -136,6 +139,10 @@ def RCPT(client_socket,recipients):
 
 def check_status_code(client_sock: socket.socket, status_code: int) -> None:
     server_data = client_sock.recv(256)
+    if not server_data:
+        print(" C: Connection lost",end="\r\n",flush=True)
+        sys.exit(3)
+
     recv_ls = server_data.decode().split("\r\n")
     for data in recv_ls[:-1]:
         print("S: "+data,end="\r\n",flush=True)

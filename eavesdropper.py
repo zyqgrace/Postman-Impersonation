@@ -22,15 +22,18 @@ def parse_conf_path():
                 spy_path = info[9:]
     except FileNotFoundError:
         sys.exit(1)
-    if server_port == None or client_port == None:
+    if server_port == None or client_port == None or spy_path ==None:
         sys.exit(2)
     elif not server_port.isnumeric() or not client_port.isnumeric():
         sys.exit(2)
     elif int(server_port) <= 1024 or int(client_port) <= 1024:
         sys.exit(2)
-    elif spy_path == None:
+    elif  int(server_port) == int(client_port):
         sys.exit(2)
-    spy_path = os.path.expanduser(spy_path)
+    try:
+        spy_path = os.path.expanduser(spy_path)
+    except Exception:
+        sys.exit(2)
     return int(server_port),int(client_port),spy_path
 
 def write_file(path,sender,receivers,body):
@@ -62,22 +65,17 @@ def main():
     RCPT_to = []
     text = []
     record=False
-    filename = None
     try:
         AS = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         AS.connect((IP,server_port))
-    except Exception:
+    except socket.error:
         print("AS: Cannot establish connection",end="\r\n",flush=True)
         sys.exit(3)
 
-    try:
-        AC = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        AC.bind((IP,client_port))
-        AC.listen()
-        conn, addr = AC.accept()
-    except Exception:
-        print("AC: Connection lost",end="\r\n",flush=True)
-        sys.exit(3)
+    AC = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    AC.bind((IP,client_port))
+    AC.listen()
+    conn, addr = AC.accept()
 
     while True:
         recved = AS.recv(1024)
@@ -94,7 +92,7 @@ def main():
         recved = conn.recv(1024)
         info = recved.decode()
         if not recved:
-            break
+            print("AC: Connection lost",end="\r\n",flush=True)
         print("C: "+info.strip("\r\n"),end="\r\n",flush=True)
         print("AS: "+info.strip("\r\n"),end="\r\n",flush=True)
         if info == ".\r\n":
@@ -109,6 +107,8 @@ def main():
         if info[0:4]=="DATA":
             record = True
         AS.send(recved)
+        if info[0:4]=="QUIT":
+            break
     AS.close()
     conn.close()
     AC.close()
