@@ -33,4 +33,4 @@ S: 354 Start mail input end <CRLF>.<CRLF>
 C: .
 S: 250 Requested mail action okay completed
 C: QUIT
-S: 250 Requested mail action okay completed
+S: 221 Service closing transmission channel

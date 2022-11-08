@@ -5,6 +5,10 @@ C: DATA
 S: 503 Bad sequence of commands
 C: EHLO
 S: 501 Syntax error in parameters or arguments
+C: EHLO 1272.1.12.1
+S: 501 Syntax error in parameters or arguments
+C: EHLO 127.0.1
+S: 501 Syntax error in parameters or arguments
 C: EHLO 127.0.0.1
 S: 250 127.0.0.1
 S: 250 AUTH CRAM-MD5

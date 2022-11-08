@@ -1,4 +1,5 @@
 DATA
+EHLO 127.0.0.1
 MAIL FROM:<kiki@gmail.com>
 EHLO 127.0.0.1
 MAIL FROM:<sas@ajsk.com>

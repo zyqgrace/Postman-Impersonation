@@ -7,7 +7,7 @@ def parse_conf_path():
     server_port = None
     client_port = None
     spy_path = None
-    if len(sys.argv)<= 1:
+    if len(sys.argv) <= 1:
         sys.exit(1)
     try:
         conf_path = open(sys.argv[1],'r')

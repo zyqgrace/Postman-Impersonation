@@ -7,7 +7,9 @@ S: 501 Syntax error in parameters or arguments
 C: AUTH FOOBAR
 S: 504 Unrecognized authentication type
 C: AUTH CRAM-MD5
-S: 235 Authentication successful
+S: 535 Authentication credentials invalid
+C: NOOP
+S: 250 Requested mail action okay completed
 C: MAIL FROM:<bob@bob.org>
 S: 250 Requested mail action okay completed
 C: RCPT TO:<alice@example.com>

@@ -21,7 +21,7 @@ def parse_conf():
     parse the configuration file
     return the server_port number and absolution path of send_path
     '''
-    if len(sys.argv)<= 1:
+    if len(sys.argv) <= 1:
         sys.exit(1)
     server_port = None
     send_path = None
@@ -44,7 +44,7 @@ def parse_conf():
         send_path = os.path.expanduser(send_path)
     except Exception:
         sys.exit(2)
-    return int(server_port),send_path
+    return int(server_port), send_path
 
 def list_directory(send_path):
     """
@@ -68,7 +68,6 @@ def read_text(filepath):
     """
     f = open(filepath,"r")
     texts = f.readlines()
-    send_status = True
     From = None
     To = None
     Date = None
@@ -91,6 +90,19 @@ def read_text(filepath):
         sys.exit(0)
     return Email(From, To, Date, Subject, Body)
 
+def check_status_code(client_sock, status_code) -> None:
+    server_data = client_sock.recv(256)
+    if not server_data:
+        print(" C: Connection lost",end="\r\n",flush=True)
+        sys.exit(3)
+    recv_ls = server_data.decode().split("\r\n")
+    for data in recv_ls[:-1]:
+        print("S: "+data,end="\r\n",flush=True)
+    actual_status_code = int(recv_ls[0][0:3])
+    if actual_status_code != status_code:
+        return False
+    else:
+        return True
 
 def send_email_via_server(client_socket, email):
     with client_socket:
@@ -137,21 +149,6 @@ def RCPT(client_socket,recipients):
         client_socket.send(send_to.encode())
         check_status_code(client_socket,250)
 
-def check_status_code(client_sock: socket.socket, status_code: int) -> None:
-    server_data = client_sock.recv(256)
-    if not server_data:
-        print(" C: Connection lost",end="\r\n",flush=True)
-        sys.exit(3)
-
-    recv_ls = server_data.decode().split("\r\n")
-    for data in recv_ls[:-1]:
-        print("S: "+data,end="\r\n",flush=True)
-    actual_status_code = int(recv_ls[0][0:3])
-    if actual_status_code != status_code:
-        return False
-    else:
-        return True
-
 def AUTH(client_socket):
     respond = "AUTH CRAM-MD5"
     print("C: "+respond,end="\r\n",flush=True)
@@ -173,7 +170,6 @@ def AUTH(client_socket):
     return False
 
 def main():
-    # TODO
     IP = 'localhost'
     PORT, send_path = parse_conf()
     file_paths = list_directory(send_path)

@@ -11,6 +11,7 @@ import datetime
 # Visit https://edstem.org/au/courses/8961/lessons/26522/slides/196175 to get
 PERSONAL_ID = 'B03FFA'
 PERSONAL_SECRET = '113619c855557bbe68464878e6aea7d3'
+BUFLEN = 1024
 
 def parse_conf_path():
     server_port = None
@@ -112,7 +113,6 @@ def check_email_format(info):
     '''
     correct example of info : <bob@bob.org>
     '''
-    Format = False
     if info[0] != '<' or info[-3:]!=">\r\n":
         return False
     mailbox = info[1:-3].split("@")
@@ -173,7 +173,7 @@ def AUTH(datasocket):
     challenge = base64.b64encode(password.encode())
     send_msg = b"334 "+challenge+b"\r\n"
     datasocket.send(send_msg)
-    answer = datasocket.recv(256)
+    answer = datasocket.recv(BUFLEN)
     if (answer.decode() == "*\r\n"):
         send_code(datasocket,501)
         return False
@@ -215,7 +215,7 @@ def DATA(datasocket,info):
     send_code(datasocket,354)
     text = []
     while True:
-        recved = datasocket.recv(1024)
+        recved = datasocket.recv(BUFLEN)
         info = recved.decode()
         if not recved:
             break
@@ -233,7 +233,6 @@ def write_file(path, sender, receivers, body,auth_pass):
     '''
     filename = None
     cur_time = body[0].strip("\r\n")
-    email_finish = False
     try:
         date_format = datetime.datetime.strptime(cur_time, 
                     'Date: %a, %d %b %Y %H:%M:%S %z')

@@ -1,6 +1,8 @@
 HAHA
 DATA
 EHLO
+EHLO 1272.1.12.1
+EHLO 127.0.1
 EHLO 127.0.0.1
 sdskjdadjlasdjksajdkal
 RSET

@@ -12,6 +12,7 @@ dasdasdasd
 QUIT
 EHLO 127.0.0.1
 MAIL FROM:
+MAIL FROM:<jkas@-ksjak.com>
 MAIL FROM:<js-j@asa-s.ass>
 DATA
 RCPT TO:<sakajs@jks-ad.jdk>

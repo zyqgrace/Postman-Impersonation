@@ -30,6 +30,8 @@ S: 250 127.0.0.1
 S: 250 AUTH CRAM-MD5
 C: MAIL FROM:
 S: 501 Syntax error in parameters or arguments
+C: MAIL FROM:<jkas@-ksjak.com>
+S: 501 Syntax error in parameters or arguments
 C: MAIL FROM:<js-j@asa-s.ass>
 S: 250 Requested mail action okay completed
 C: DATA

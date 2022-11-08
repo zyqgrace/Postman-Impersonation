@@ -2,6 +2,7 @@ EHLO 127.0.0.1
 AUTH
 AUTH FOOBAR
 AUTH CRAM-MD5
+(wrong answer from client)
 NOOP
 MAIL FROM:<bob@bob.org>
 RCPT TO:<alice@example.com>
