@@ -51,7 +51,7 @@ def list_directory(send_path):
     return all the files in the send_path in alphabetically order
     """
     files = []
-    if(not os.path.isdir(send_path)):
+    if (not os.path.isdir(send_path)):
         sys.exit(2)
     try:
         for file in os.listdir(send_path):
